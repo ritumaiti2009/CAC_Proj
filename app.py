@@ -6,6 +6,8 @@ from flask_session import Session
 from datetime import timedelta
 from werkzeug.security import check_password_hash, generate_password_hash
 
+from helpers import error
+
 # Configure application
 app = Flask(__name__)
 app.secret_key = "fbla_lost_and_found".encode('utf8') # Required for flask session security
@@ -28,8 +30,8 @@ def init_db():
               password TEXT NOT NULL,
               first_name TEXT NOT NULL,
               last_name TEXT NOT NULL,
-              preferred_name TEXT,
-              phone_num TEXT,
+              preferred_name TEXT DEFAULT NULL,
+              phone_num TEXT DEFAULT NULL,
               status TEXT NOT NULL DEFAULT 'student'
         )
     ''')
@@ -66,7 +68,7 @@ def register():
     # Attempt to register new account when a POST received
     if(request.method == "POST"):
         email = request.form["email"]
-        password = generate_password_hash(request.form["password"])
+        password = generate_password_hash(request.form["password"], method="pbkdf2:sha256")
         first_name = request.form["first_name"]
         last_name = request.form["last_name"]
 
@@ -74,25 +76,15 @@ def register():
         c = conn.cursor()
 
         try:
-            c.execute("INSERT INTO users (email, password, first_name, last_name)", (email, password, first_name, last_name))
+            c.execute("INSERT INTO users (email, password, first_name, last_name) VALUES (?, ?, ?, ?)", (email, password, first_name, last_name))
             conn.commit()
             conn.close()
-            return redirect(".login")
+            return redirect("/login")
         except:
-            return "Unable to log in: Email already exists"
+            return error("Unable to register: Email already exists", 402)
     
     # Return html layout when GET method received
-    return """
-    <h2>Register<h2>
-    <form method="post">
-        First Name: <input type="text" name="first_name"><br><br>
-        Last Name: <input type="text" name="last_name"><br><br>
-        Email: <input type="email" name="email"><br><br>
-        Password: <input type="password" name="password"><br><br>
-        <button type="submit">Register</button>
-    </form>
-    <a href='/login'>Login</a>
-    """
+    return render_template("register.html")
 
 # Set up logging in function
 @app.route("/login", methods=["GET", "POST"])
@@ -113,18 +105,10 @@ def login():
             session["user"] = email
             return redirect("/")
         else:
-            return "Unable to login: Incorrect email or password"
+            return error("Unable to login: Incorrect email or password", 402)
 
     # Return html layout when GET method received
-    return """
-    <h2>Login<h2>
-    <form method="post">
-        Email: <input type="email" name="email"><br><br>
-        Password: <input type="password" name="password"><br><br>
-        <button type="submit">Login</button>
-    </form>
-    <a href='/register'>Login</a>
-    """
+    return render_template("login.html")
 
 # Set up logging out function
 @app.route("/logout")

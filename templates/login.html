@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Log In
+{% endblock %}
+
+{% block main %}
+    <h2>Login<h2>
+    <form method="post">
+        Email: <input type="email" name="email"><br><br>
+        Password: <input type="password" name="password"><br><br>
+        <button type="submit">Login</button>
+    </form>
+    <a href='/register'>Register</a>
+{% endblock %}
