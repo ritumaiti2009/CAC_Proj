@@ -65,16 +65,28 @@ def index():
 def register():
     # Attempt to register new account when a POST received
     if(request.method == "POST"):
+        # Get required attributes
         email = request.form["email"]
         password = generate_password_hash(request.form["password"], method="pbkdf2:sha256")
         first_name = request.form["first_name"]
         last_name = request.form["last_name"]
 
+        # Get optional attribute and check if it is entered
+        preferred_name = request.form["preferred_name"]
+        phone_num = request.form["phone_num"]
+        if not preferred_name:
+            preferred_name = None
+        if not phone_num:
+            phone_num = None
+
         conn = sqlite3.connect(DATABASE)
         c = conn.cursor()
 
         try:
-            c.execute("INSERT INTO users (email, password, first_name, last_name) VALUES (?, ?, ?, ?)", (email, password, first_name, last_name))
+            c.execute(
+                "INSERT INTO users (email, password, first_name, last_name, preferred_name, phone_num) VALUES (?, ?, ?, ?, ?, ?)", 
+                (email, password, first_name, last_name, preferred_name, phone_num)
+                )
             conn.commit()
             conn.close()
             return redirect("/login")

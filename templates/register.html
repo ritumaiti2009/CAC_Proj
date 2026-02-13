@@ -9,10 +9,14 @@
 {% block main %}
     <h2>Register<h2>
     <form method="post">
-        First Name: <input type="text" name="first_name"><br><br>
-        Last Name: <input type="text" name="last_name"><br><br>
-        Email: <input type="email" name="email"><br><br>
-        Password: <input type="password" name="password"><br><br>
+        Required<br>
+        First Name: <input type="text" name="first_name" required><br><br>
+        Last Name: <input type="text" name="last_name" required><br><br>
+        Email: <input type="email" name="email" required><br><br>
+        Password: <input type="password" name="password" required><br><br>
+        Optional<br>
+        Preferred Name: <input type="text" name="preferred_name"><br><br>
+        Phone Number: <input type="tel" name="phone_num"><br><br><br>
         <button type="submit">Register</button>
     </form>
     <a href='/login'>Login</a>
