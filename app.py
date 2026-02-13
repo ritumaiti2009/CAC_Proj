@@ -1,8 +1,8 @@
 import os
 import sqlite3
 
-from flask import Flask, flash, redirect, render_template, request, session  
-from flask_session import Session   
+from flask import Flask, flash, redirect, render_template, request, session
+from flask_session import Session
 from datetime import timedelta
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
@@ -11,21 +11,25 @@ from helpers import error, login_required, admin_required
 
 # Configure application
 app = Flask(__name__)
-app.secret_key = "fbla_lost_and_found".encode('utf8') # Required for flask session security
+app.secret_key = "fbla_lost_and_found".encode(
+    "utf8"
+)  # Required for flask session security
 
 # Const for database name
 DATABASE = "database.db"
 
 # Handles image collection
 UPLOAD_PATH = "static/uploads"
-app.config['UPLOAD_PATH'] = UPLOAD_PATH
+app.config["UPLOAD_PATH"] = UPLOAD_PATH
 os.makedirs(UPLOAD_PATH, exist_ok=True)
 
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
+
 
 # Check if file is accepted by checking if file type matches the accepted ones
 def check_allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 # Set up database
 def init_db():
@@ -35,7 +39,8 @@ def init_db():
 
     # Create databases
 
-    c.execute('''
+    c.execute(
+        """
         CREATE TABLE IF NOT EXISTS users (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               email TEXT UNIQUE NOT NULL,
@@ -46,9 +51,11 @@ def init_db():
               phone_num TEXT DEFAULT NULL,
               status TEXT NOT NULL DEFAULT 'student'
         )
-    ''')
+    """
+    )
 
-    c.execute('''
+    c.execute(
+        """
         CREATE TABLE IF NOT EXISTS items (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               user_id INTEGER REFERENCES users(id) DEFAULT NULL,
@@ -61,28 +68,33 @@ def init_db():
               status TEXT NOT NULL DEFAULT 'lost',
               approved BOOLEAN NOT NULL DEFAULT false
         )
-    ''')
+    """
+    )
 
     conn.commit()
     conn.close()
 
-# Set up default indexpage 
+
+# Set up default indexpage
 @app.route("/")
 def index():
     # Check for session
     if "user" in session:
-        return render_template("index.html", user=session.get('user'))
+        return render_template("index.html", user=session.get("user"))
     else:
         return render_template("index.html", user="guest")
+
 
 # Set up registration function
 @app.route("/register", methods=["GET", "POST"])
 def register():
     # Attempt to register new account when a POST received
-    if(request.method == "POST"):
+    if request.method == "POST":
         # Get required attributes
         email = request.form["email"]
-        password = generate_password_hash(request.form["password"], method="pbkdf2:sha256")
+        password = generate_password_hash(
+            request.form["password"], method="pbkdf2:sha256"
+        )
         first_name = request.form["first_name"]
         last_name = request.form["last_name"]
 
@@ -96,17 +108,18 @@ def register():
 
         try:
             c.execute(
-                "INSERT INTO users (email, password, first_name, last_name, preferred_name, phone_num) VALUES (?, ?, ?, ?, ?, ?)", 
-                (email, password, first_name, last_name, preferred_name, phone_num)
-                )
+                "INSERT INTO users (email, password, first_name, last_name, preferred_name, phone_num) VALUES (?, ?, ?, ?, ?, ?)",
+                (email, password, first_name, last_name, preferred_name, phone_num),
+            )
             conn.commit()
             conn.close()
             return redirect("/login")
         except:
             return error("Unable to register: Email already exists", 402)
-    
+
     # Return html layout when GET method received
     return render_template("register.html")
+
 
 # Set up logging in function
 @app.route("/login", methods=["GET", "POST"])
@@ -118,7 +131,7 @@ def login():
 
         conn = sqlite3.connect(DATABASE)
         c = conn.cursor()
-        c.execute("SELECT * FROM users WHERE email = ?", (email,)) 
+        c.execute("SELECT * FROM users WHERE email = ?", (email,))
         user = c.fetchone()
         conn.close()
 
@@ -135,6 +148,7 @@ def login():
     # Return html layout when GET method received
     return render_template("login.html")
 
+
 # Set up logging out function
 @app.route("/logout")
 @login_required
@@ -143,37 +157,38 @@ def logout():
     session.pop("user", None)
     return redirect("/login")
 
+
 # Get items submissions
 @app.route("/submit", methods=["POST"])
 def submit():
     # Check for session
     if "user" in session:
         # Get user info from session
-        user_id = session.get('user_id')
-        email = session.get('user')
-        name = session.get('name')
- 
+        user_id = session.get("user_id")
+        email = session.get("user")
+        name = session.get("name")
+
     else:
         # Get user info from form
         user_id = None
         email = request.form["email"]
         name = request.form["name"]
-        
+
     # Get submission from form
     status = request.form["type"]
     title = request.form["title"]
     description = request.form["description"] or None
-    image = request.files.get('image')
+    image = request.files.get("image")
 
     # Save image to UPLOAD_PATH
     filepath = None
-    if image and image.filename != '':
+    if image and image.filename != "":
         if check_allowed_file(image.filename):
             filename = secure_filename(image.filename)
-            filepath = os.path.join(app.config['UPLOAD_PATH'], filename)
+            filepath = os.path.join(app.config["UPLOAD_PATH"], filename)
             image.save(filepath)
         else:
-            return error("Error uploading image: Invalid file type", 402)      
+            return error("Error uploading image: Invalid file type", 402)
 
     # Upload to database
     conn = sqlite3.connect(DATABASE)
@@ -181,15 +196,16 @@ def submit():
 
     try:
         c.execute(
-            "INSERT INTO items (user_id, email, poster_name, title, description, status) VALUES (?, ?, ?, ?, ?, ?)", 
-            (user_id, email, name, title, description, status)
-            )
+            "INSERT INTO items (user_id, email, poster_name, title, description, status) VALUES (?, ?, ?, ?, ?, ?)",
+            (user_id, email, name, title, description, status),
+        )
         conn.commit()
         conn.close()
         return redirect("/")
     except:
         return error("Unable to upload: Check inputs", 402)
-    
+
+
 # Debugging
 if __name__ == "__main__":
     init_db()
