@@ -6,7 +6,7 @@ from flask_session import Session
 from datetime import timedelta
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from helpers import error
+from helpers import error, login_required, admin_required
 
 # Configure application
 app = Flask(__name__)
@@ -53,6 +53,7 @@ def init_db():
 
 # Set up default homepage 
 @app.route("/") 
+@login_required
 def home():
     # Check for session
     if "user" in session:
@@ -102,7 +103,9 @@ def login():
 
         # Authenticate password
         if user and check_password_hash(user[2], password):
+            session["user_id"] = user[0]
             session["user"] = email
+            session["status"] = user[7]
             return redirect("/")
         else:
             return error("Unable to login: Incorrect email or password", 402)
@@ -112,6 +115,7 @@ def login():
 
 # Set up logging out function
 @app.route("/logout")
+@login_required
 def logout():
     # Remove user from session and return None
     session.pop("user", None)
