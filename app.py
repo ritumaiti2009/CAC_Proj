@@ -1,9 +1,7 @@
 import os
 import sqlite3
 
-from flask import Flask, flash, redirect, render_template, request, session
-from flask_session import Session
-from datetime import timedelta
+from flask import Flask, redirect, render_template, request, session
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
@@ -29,6 +27,21 @@ ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 # Check if file is accepted by checking if file type matches the accepted ones
 def check_allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+# Get unique filename for image upload
+def get_unique_filepath(filename):
+
+    # Seperate name from extension
+    base, ext = os.path.splitext(filename)
+
+    counter = 1
+    unique_name = filename
+    while os.path.exists(os.path.join(app.config["UPLOAD_PATH"], unique_name)):
+        unique_name = f"{base}_{counter}{ext}"
+        counter += 1
+    return os.path.join(app.config["UPLOAD_PATH"], unique_name)
+
 
 
 # Set up database
@@ -76,13 +89,13 @@ def init_db():
 
 
 # Receive items post from database
-def select_items(status, approved=True):
+def select_items(status):
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
 
     try:
-        c.execute("SELECT * FROM items WHERE status = ? AND approved = ?", 
-                  (status, approved))
+        c.execute("SELECT * FROM items WHERE status = ? AND approved = true", 
+                  (status))
         items = c.fetchall()
         conn.close()
         return items
@@ -144,11 +157,14 @@ def login():
         email = request.form["email"]
         password = request.form["password"]
 
-        conn = sqlite3.connect(DATABASE)
-        c = conn.cursor()
-        c.execute("SELECT * FROM users WHERE email = ?", (email,))
-        user = c.fetchone()
-        conn.close()
+        try:
+            conn = sqlite3.connect(DATABASE)
+            c = conn.cursor()
+            c.execute("SELECT * FROM users WHERE email = ?", (email,))
+            user = c.fetchone()
+            conn.close()
+        except:
+            return error("Unable to login: Failed to fetch login information", 402)
 
         # Authenticate password
         if user and check_password_hash(user[2], password):
@@ -200,7 +216,7 @@ def submit():
     if image and image.filename != "":
         if check_allowed_file(image.filename):
             filename = secure_filename(image.filename)
-            filepath = os.path.join(app.config["UPLOAD_PATH"], filename)
+            filepath = get_unique_filepath(filename)
             image.save(filepath)
         else:
             return error("Error uploading image: Invalid file type", 402)
@@ -224,20 +240,92 @@ def submit():
 # Handles displaying lost items
 @app.route("/lost")
 def lost():
-    return render_template("lost.html", items=select_items("lost"))
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+
+    try:
+        c.execute("SELECT * FROM items WHERE status = 'lost' AND approved = true")
+        items_list = c.fetchall()
+        conn.close()
+    except:
+        return error("Failed to fetch items", 402)
+    
+    return render_template("lost.html", items=items_list)
 
 
 # Handles displaying found items
 @app.route("/found")
 def found():
-    return render_template("found.html", items=select_items("found"))
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+
+    try:
+        c.execute("SELECT * FROM items WHERE status = 'found' AND approved = true")
+        items_list = c.fetchall()
+        conn.close()
+    except:
+        return error("Failed to fetch items", 402)
+    
+    return render_template("found.html", items=items_list)
 
 
-# Handles approval of posts for admin
-@app.route("/approve")
+# Handles management of posts for admin
+@app.route("/manage")
+@login_required
 @admin_required
-def approve():
-    return render_template("approve.html", items=select_items("found", False))
+def manage():
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+
+    try:
+        c.execute("SELECT * FROM items")
+        items_list = c.fetchall()
+        conn.close()
+    except:
+        return error("Failed to fetch items", 402)
+    
+    return render_template("manage.html", items=items_list)
+
+
+# Delete submission
+@app.route("/delete/<int:id>", methods=["POST"])
+@login_required
+@admin_required
+def delete_item(id):
+    try:
+        conn = sqlite3.connect(DATABASE)
+        c = conn.cursor()
+
+        # Delete image if it exists
+        c.execute("SELECT image_path FROM items WHERE id = ?", (id,))
+        row = c.fetchone()
+        if row:
+            image_path = row[0]
+            os.remove(image_path)
+
+        # Delete entry
+        c.execute("DELETE FROM items WHERE id = ?", (id,))
+        conn.commit()
+        conn.close()
+    except:
+        return error("Failed to delete", 402)
+    return redirect("/")
+
+
+# Approve submission
+@app.route("/approve/<int:id>", methods=["POST"])
+@login_required
+@admin_required
+def approve_item(id):
+    try:
+        conn = sqlite3.connect(DATABASE)
+        c = conn.cursor()
+        c.execute("UPDATE items SET approved = true WHERE id = ?", (id,))
+        conn.commit()
+        conn.close()
+    except:
+        return error("Failed to update", 402)
+    return redirect("/")
 
 
 # Debugging

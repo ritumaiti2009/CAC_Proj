@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Manage Submission
+{% endblock %}
+
+{% block main %}
+    {% for item in items %}
+        <div>
+            <h2>
+                {% if item[9] == 0 %}
+                    Unapproved
+                {% else %}
+                    Approved
+                {% endif %}
+            </h2>
+            <h2>{{ item[8] }}</h2>
+            <h4>{{ item[7] }}</h4>
+            <h4>{{ item[2] }}</h4>
+            <h4>{{ item[3] }}</h4><br>
+            <h2>{{ item[4] }}</h2><br>
+            <p>{{ item[5] }}<p><br>
+            {% if item[6] %}
+                <img src="{{ item[6] }}" alt="{{ item[4] }}" width="200px"><br>
+            {% endif %}
+            <form action="{{ url_for('delete_item', id=item[0]) }}" method="post">
+                <button type="submit">Delete</button>
+            </form>
+            <form action="{{ url_for('approve_item', id=item[0]) }}" method="post">
+                <button type="submit">Approve</button>
+            </form>
+        </div>
+    {% endfor %}
+{% endblock %}

@@ -15,21 +15,19 @@
 
         {% block nav %}
             {% if session.get("user") and session.get("status") == "admin" %}
-                <a href="/approve">Approve</a>
-                <a href="/lost">Lost Items</a>
-                <a href="/found">Found Items</a>
-                <a href="/logout">Log Out</a>
-            {% elif session.get("user") and session.get("status") == "student" %}
-                <a href="/lost">Lost Items</a>
-                <a href="/found">Found Items</a>
+                <a href="/manage">Manage</a>
+            {% endif %}
+
+            <a href="/lost">Lost Items</a>
+            <a href="/found">Found Items</a>
+
+            {% if session.get("user") %}
                 <a href="/logout">Log Out</a>
             {% else %}
-                <a href="/lost">Lost Items</a>
-                <a href="/found">Found Items</a>
                 <a href="/login">Log In</a>
             {% endif %}
         {% endblock %}
-        
+
     </nav>
 
     {% block main %}{% endblock %}
