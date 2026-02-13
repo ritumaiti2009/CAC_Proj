@@ -5,4 +5,14 @@
 {% endblock %}
 
 {% block main %}
+    {% for item in items %}
+    <div>
+        {{ items.email }}
+        <h4>{{ item[2] }}</h4>
+        <h4>{{ item[3] }}</h4><br>
+        <h2>{{ item[4] }}</h2><br>
+        <p>{{ item[5] }}<p><br>
+        <img src="{{ item[6] }}" alt="{{ item[4] }}" width="200px"><br>
+    </div>
+    {% endfor %}
 {% endblock %}

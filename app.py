@@ -60,7 +60,7 @@ def init_db():
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               user_id INTEGER REFERENCES users(id) DEFAULT NULL,
               email TEXT NOT NULL,
-              poster_name TEXT NOT NULL,
+              name TEXT NOT NULL,
               title TEXT NOT NULL,
               description TEXT,
               image_path TEXT,
@@ -73,6 +73,21 @@ def init_db():
 
     conn.commit()
     conn.close()
+
+
+# Receive items post from database
+def select_items(status, approved=True):
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+
+    try:
+        c.execute("SELECT * FROM items WHERE status = ? AND approved = ?", 
+                  (status, approved))
+        items = c.fetchall()
+        conn.close()
+        return items
+    except:
+        return error("Failed to fetch items", 402)
 
 
 # Set up default indexpage
@@ -94,7 +109,7 @@ def register():
         email = request.form["email"]
         password = generate_password_hash(
             request.form["password"], method="pbkdf2:sha256"
-        )
+        ) # Set hashing style to avoid scrypt
         first_name = request.form["first_name"]
         last_name = request.form["last_name"]
 
@@ -158,7 +173,7 @@ def logout():
     return redirect("/login")
 
 
-# Get items submissions
+# Get item submissions
 @app.route("/submit", methods=["POST"])
 def submit():
     # Check for session
@@ -196,14 +211,33 @@ def submit():
 
     try:
         c.execute(
-            "INSERT INTO items (user_id, email, poster_name, title, description, status) VALUES (?, ?, ?, ?, ?, ?)",
-            (user_id, email, name, title, description, status),
+            "INSERT INTO items (user_id, email, name, title, description, image_path, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (user_id, email, name, title, description, filepath, status),
         )
         conn.commit()
         conn.close()
         return redirect("/")
     except:
         return error("Unable to upload: Check inputs", 402)
+
+
+# Handles displaying lost items
+@app.route("/lost")
+def lost():
+    return render_template("lost.html", items=select_items("lost"))
+
+
+# Handles displaying found items
+@app.route("/found")
+def found():
+    return render_template("found.html", items=select_items("found"))
+
+
+# Handles approval of posts for admin
+@app.route("/approve")
+@admin_required
+def approve():
+    return render_template("approve.html", items=select_items("found", False))
 
 
 # Debugging
