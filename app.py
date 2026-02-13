@@ -51,17 +51,14 @@ def init_db():
     conn.commit()
     conn.close()
 
-# Set up default homepage 
-@app.route("/") 
-@login_required
-def home():
+# Set up default indexpage 
+@app.route("/")
+def index():
     # Check for session
     if "user" in session:
-        return f"""
-        <h2>Welcome {session['user']}!</h2>
-        <a href='/logout'>Logout</a>
-        """
-    return redirect("/login")
+        return render_template("index.html", user=session.get('user'))
+    else:
+        return render_template("index.html", user="guest")
 
 # Set up registration function
 @app.route("/register", methods=["GET", "POST"])
