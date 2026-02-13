@@ -5,6 +5,7 @@ from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session   
 from datetime import timedelta
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
 
 from helpers import error, login_required, admin_required
 
@@ -14,6 +15,17 @@ app.secret_key = "fbla_lost_and_found".encode('utf8') # Required for flask sessi
 
 # Const for database name
 DATABASE = "database.db"
+
+# Handles image collection
+UPLOAD_PATH = "static/uploads"
+app.config['UPLOAD_PATH'] = UPLOAD_PATH
+os.makedirs(UPLOAD_PATH, exist_ok=True)
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+# Check if file is accepted by checking if file type matches the accepted ones
+def check_allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # Set up database
 def init_db():
@@ -39,12 +51,15 @@ def init_db():
     c.execute('''
         CREATE TABLE IF NOT EXISTS items (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
-              user_id INTEGER NOT NULL REFERENCES users(id),
+              user_id INTEGER REFERENCES users(id) DEFAULT NULL,
+              email TEXT NOT NULL,
+              poster_name TEXT NOT NULL,
               title TEXT NOT NULL,
               description TEXT,
               image_path TEXT,
               date_reported DATETIME DEFAULT CURRENT_TIMESTAMP,
-              status TEXT NOT NULL DEFAULT 'lost'
+              status TEXT NOT NULL DEFAULT 'lost',
+              approved BOOLEAN NOT NULL DEFAULT false
         )
     ''')
 
@@ -71,14 +86,11 @@ def register():
         first_name = request.form["first_name"]
         last_name = request.form["last_name"]
 
-        # Get optional attribute and check if it is entered
-        preferred_name = request.form["preferred_name"]
-        phone_num = request.form["phone_num"]
-        if not preferred_name:
-            preferred_name = None
-        if not phone_num:
-            phone_num = None
+        # Get optional attribute and check if it is empty
+        preferred_name = request.form["preferred_name"].strip() or None
+        phone_num = request.form["phone_num"].strip() or None
 
+        # Upload to database
         conn = sqlite3.connect(DATABASE)
         c = conn.cursor()
 
@@ -114,6 +126,7 @@ def login():
         if user and check_password_hash(user[2], password):
             session["user_id"] = user[0]
             session["user"] = email
+            session["name"] = f"{user[3]} {user[4]}"
             session["status"] = user[7]
             return redirect("/")
         else:
@@ -130,6 +143,53 @@ def logout():
     session.pop("user", None)
     return redirect("/login")
 
+# Get items submissions
+@app.route("/submit", methods=["POST"])
+def submit():
+    # Check for session
+    if "user" in session:
+        # Get user info from session
+        user_id = session.get('user_id')
+        email = session.get('user')
+        name = session.get('name')
+ 
+    else:
+        # Get user info from form
+        user_id = None
+        email = request.form["email"]
+        name = request.form["name"]
+        
+    # Get submission from form
+    status = request.form["type"]
+    title = request.form["title"]
+    description = request.form["description"] or None
+    image = request.files.get('image')
+
+    # Save image to UPLOAD_PATH
+    filepath = None
+    if image and image.filename != '':
+        if check_allowed_file(image.filename):
+            filename = secure_filename(image.filename)
+            filepath = os.path.join(app.config['UPLOAD_PATH'], filename)
+            image.save(filepath)
+        else:
+            return error("Error uploading image: Invalid file type", 402)      
+
+    # Upload to database
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+
+    try:
+        c.execute(
+            "INSERT INTO items (user_id, email, poster_name, title, description, status) VALUES (?, ?, ?, ?, ?, ?)", 
+            (user_id, email, name, title, description, status)
+            )
+        conn.commit()
+        conn.close()
+        return redirect("/")
+    except:
+        return error("Unable to upload: Check inputs", 402)
+    
 # Debugging
 if __name__ == "__main__":
     init_db()

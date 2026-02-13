@@ -6,4 +6,34 @@
 
 {% block main %}
     <h2>Welcome {{ user }}!</h2>
+
+    <br>
+
+    <h2>Form to report an item</h2>
+    <form method="post" action="/submit" enctype="multipart/form-data">
+        <label>
+            <input type="radio" name="type" value="lost" checked>
+            Lost
+        </label>  
+        <label>
+            <input type="radio" name="type" value="found">
+            Found
+        </label>  
+
+        {% if session.get("user") %}
+            Required<br>
+            Title: <input type="text" name="title" required><br><br>
+        {% else %}
+            Required<br>
+            Your Email: <input type="email" name="email" required><br><br>
+            Your Name: <input type="text" name="name" required><br><br>
+            Title: <input type="text" name="title" required><br><br>
+        {% endif %}
+
+        Optional<br>
+        Description: <input type="text" name="description"><br><br>
+        Image: <input type="file" name="image" accept="image/*"><br><br>
+
+        <button type="submit">Upload</button>
+    </form>
 {% endblock %}
