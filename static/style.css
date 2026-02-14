@@ -1,0 +1,41 @@
+body {
+    display: flex;
+    flex-direction: column;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+h4 {
+    margin: 4px;
+}
+
+h5 {
+    margin: 4px;
+}
+
+p {
+    margin: 4px;
+}
+
+.cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+}
+
+.card {
+    border: 1px solid black;
+    border-radius: 4px;
+    width: 400px;
+}
+
+.card.content {
+    border: 0px;
+    display: flex;
+    flex-direction: column;
+}
+
+.card.button {
+    border: 0px;
+    display: flex;
+    gap: 10px
+}

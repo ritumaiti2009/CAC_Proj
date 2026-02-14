@@ -6,14 +6,14 @@
 
 {% block card %}
     {% for item in items %}
-        <div>
-            <h4>{{ item[7] }}</h4>
-            <h4>{{ item[2] }}</h4>
-            <h4>{{ item[3] }}</h4><br>
-            <h2>{{ item[4] }}</h2><br>
-            <p>{{ item[5] }}<p><br>
+        <div class="card">
+            <h5>Post Time: {{ item[7] }}</h5>
+            <h5>Email: {{ item[2] }}</h5>
+            <h5>Name: {{ item[3] }}</h5>
+            <h4>Title: {{ item[4] }}</h4>
+            <p>Description: {{ item[5] }}<p>
             {% if item[6] %}
-                <img src="{{ item[6] }}" alt="{{ item[4] }}" width="200px"><br>
+                <img src="{{ item[6] }}" alt="{{ item[4] }}" width="200px">
             {% endif %}
         </div>
     {% endfor %}
