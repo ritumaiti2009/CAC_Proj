@@ -117,7 +117,6 @@ def init_db():
     """
     )
 
-
     conn.commit()
     conn.close()
 
@@ -209,7 +208,7 @@ def login():
         if user and check_password_hash(user[2], password):
             session["user_id"] = user[0]
             session["user"] = email
-            session["name"] = f"{user[3]} {user[4]}"
+            session["name"] = f"{user[3]} {user[4]} ({user[5]})"
             session["status"] = user[7]
             return redirect("/")
         else:
@@ -301,10 +300,12 @@ def lost():
         c = conn.cursor()
 
         try:
-            c.execute("""
+            c.execute(
+                """
                       SELECT id, title, description, image_path, date_reported FROM items 
                       WHERE status = 'lost' AND approved = true
-                      """)
+                      """
+            )
             items_list = c.fetchall()
             conn.close()
         except:
@@ -342,12 +343,11 @@ def found():
         c = conn.cursor()
 
         try:
-            c.execute(
-                """
-                      SELECT id, title, description, image_path, date_reported FROM items 
+            c.execute("""
+                      SELECT id, title, description, image_path, date_reported 
+                      FROM items 
                       WHERE status = 'found' AND approved = true
-                      """
-            )
+                      """)
             items_list = c.fetchall()
             conn.close()
         except:
@@ -393,11 +393,115 @@ def request_item(id):
     return render_template("request.html", item_id=id)
 
 
+# Lists requests for user
+@app.route("/requests", methods=["GET", "POST"])
+@login_required
+def requests():
+    # Search up specific posts
+    if request.method == "POST":
+        # Get keyword for querying
+        keyword = request.form["keyword"]
+
+        conn = sqlite3.connect(DATABASE)
+        c = conn.cursor()
+
+        try:
+            # Get all approved requests with contact info
+            c.execute(
+                """
+                      SELECT 
+                      items.title,
+                      items.status,
+                      requests.message,
+                      requests.date_requested,
+                      requests.image_path,
+                      requests.status
+                      FROM requests
+                      INNER JOIN items ON requests.item_id = items.id
+                      WHERE requests.status = 'approved'
+                      AND (requests.message LIKE ? OR 
+                      items.title LIKE ? OR items.description LIKE ?)
+                      """,
+                      (f"%{keyword}%", f"%{keyword}%", f"%{keyword}%"),
+            )
+            requests_list = c.fetchall()
+
+            # Get all non-approved requests with contact info
+            c.execute(
+                """
+                      SELECT 
+                      items.title,
+                      items.status,
+                      requests.message,
+                      requests.date_requested,
+                      requests.image_path,
+                      requests.status
+                      FROM requests
+                      INNER JOIN items ON requests.item_id = items.id
+                      WHERE NOT requests.status = 'approved'
+                      AND (requests.message LIKE ? OR 
+                      items.title LIKE ? OR items.description LIKE ?)
+                      """,
+                      (f"%{keyword}%", f"%{keyword}%", f"%{keyword}%"),
+            )
+            requests_list.extend(c.fetchall())
+
+            conn.close()
+        except:
+            return error("Failed to fetch requests", 500)
+    else:
+        conn = sqlite3.connect(DATABASE)
+        c = conn.cursor()
+
+        try:
+            # Get all approved requests with contact info
+            c.execute(
+                """
+                      SELECT 
+                      items.title,
+                      items.status,
+                      items.email,
+                      items.name,
+                      requests.message,
+                      requests.date_requested,
+                      requests.image_path,
+                      requests.status
+                      FROM requests
+                      INNER JOIN items ON requests.item_id = items.id
+                      WHERE requests.status = 'approved'
+                      """
+            )
+            requests_list = c.fetchall()
+
+            # Get all non-approved requests with contact info
+            c.execute(
+                """
+                      SELECT 
+                      items.title,
+                      items.status,
+                      requests.message,
+                      requests.date_requested,
+                      requests.image_path,
+                      requests.status
+                      FROM requests
+                      INNER JOIN items ON requests.item_id = items.id
+                      WHERE NOT requests.status = 'approved'
+                      """
+            )
+            requests_list.extend(c.fetchall())
+
+            conn.close()
+        except:
+            return error("Failed to fetch requests", 500)
+
+    return render_template("requests.html", requests=requests_list)
+
+
 # Handles management of posts for admin
-@app.route("/manage", methods=["GET", "POST"])
+@app.route("/manage_items", methods=["GET", "POST"])
 @login_required
 @admin_required
-def manage():
+def manage_items():
     # Allow searching
     if request.method == "POST":
         # Get keyword for querying
@@ -429,7 +533,7 @@ def manage():
         except:
             return error("Failed to fetch items", 500)
 
-    return render_template("manage.html", items=items_list)
+    return render_template("manage_item.html", items=items_list)
 
 
 # Delete submission
@@ -473,6 +577,76 @@ def approve_item(id):
     return redirect("/")
 
 
+# Handles management of requests for admin
+@app.route("/manage_requests", methods=["GET", "POST"])
+@login_required
+@admin_required
+def manage_requests():
+    # Allow searching
+    if request.method == "POST":
+        # Get keyword for querying
+        keyword = request.form["keyword"]
+
+        conn = sqlite3.connect(DATABASE)
+        c = conn.cursor()
+
+        try:
+            c.execute(
+                """
+                    SELECT 
+                    items.title,
+                    items.status,
+                    items.email,
+                    items.name,
+                    users.email,
+                    users.preferred_name,
+                    requests.message,
+                    requests.date_requested,
+                    requests.image_path,
+                    requests.status
+                    FROM requests
+                    INNER JOIN items ON requests.item_id = items.id
+                    INNER JOIN users ON requests.user_id = users.id
+                    WHERE requests.message LIKE ? OR 
+                    items.title LIKE ? OR items.description LIKE ?
+                    """,
+                (f"%{keyword}%", f"%{keyword}%", f"%{keyword}%"),
+            )
+            request_list = c.fetchall()
+            conn.close()
+        except:
+            return error("Failed to fetch requests", 500)
+    else:
+        conn = sqlite3.connect(DATABASE)
+        c = conn.cursor()
+
+        try:
+            c.execute(
+                """
+                    SELECT 
+                    items.title,
+                    items.status,
+                    users.email,
+                    users.preferred_name,
+                    requests.message,
+                    requests.date_requested,
+                    requests.image_path,
+                    requests.status,
+                    items.email,
+                    items.name
+                    FROM requests
+                    INNER JOIN items ON requests.item_id = items.id
+                    INNER JOIN users ON requests.user_id = users.id
+                    """
+            )
+            request_list = c.fetchall()
+            conn.close()
+        except:
+            return error("Failed to fetch requests", 500)
+
+    return render_template("manage_request.html", requests=request_list)
+
+
 """Debugging"""
 
 
@@ -480,3 +654,14 @@ def approve_item(id):
 if __name__ == "__main__":
     init_db()
     app.run(debug=True, port=8000)
+
+"""
+<div class="card button">
+                <form method="post" action="{{ url_for('approve_request', id=item[10]) }}">
+                    <button type="submit">Delete</button>
+                </form>
+                <form method="post" action="{{ url_for('reject_request', id=item[10]) }}">
+                    <button type="submit">Approve</button>
+                </form>
+            </div>
+"""

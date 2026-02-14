@@ -1,0 +1,27 @@
+{% extends "list_layout.html" %}
+
+{% block title %}
+    Manage requests
+{% endblock %}
+
+{% block card %}
+    {% for request in requests %}
+        <div class="card">
+            <div class="card content">
+                <h5>Approval Status: {{ request[9] }}</h5>
+                <h5>Status: {{ request[1] }}</h5>
+                <h5>Post Time: {{ request[7] }}</h5>
+                <h5>Poster Email: {{ request[2] }}</h5>
+                <h5>Poster Name: {{ request[3] }}</h5>
+                <h5>Requester Email: {{ request[4] }}</h5>
+                <h5>Requester Name: {{ request[5] }}</h5>
+                <h4>Title of request: {{ request[0] }}</h4>
+                <p>Requester Message: {{ request[6] }}<p>
+            </div>
+            {% if request[8] %}
+                <img src="{{ request[8] }}" alt="{{ request[6] }}" width="200px">
+            {% endif %}
+            
+        </div>
+    {% endfor %}
+{% endblock %}

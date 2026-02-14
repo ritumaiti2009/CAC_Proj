@@ -1,9 +1,11 @@
 from flask import redirect, render_template, session
 from functools import wraps
 
+
 # Display error and return code
 def error(message, code):
     return render_template("error.html", num=code, msg=message), code
+
 
 # Decorate route to require login
 def login_required(f):
@@ -14,6 +16,7 @@ def login_required(f):
         return f(*args, **kwargs)
 
     return decorated_function
+
 
 # Decorate route to only allow admin
 def admin_required(f):
