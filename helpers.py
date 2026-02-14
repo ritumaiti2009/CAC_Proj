@@ -3,7 +3,7 @@ from functools import wraps
 
 # Display error and return code
 def error(message, code):
-    return render_template("error.html", num=code, m=message), code
+    return render_template("error.html", num=code, msg=message), code
 
 # Decorate route to require login
 def login_required(f):

@@ -104,7 +104,7 @@ def select_items(status):
         conn.close()
         return items
     except:
-        return error("Failed to fetch items", 402)
+        return error("Failed to fetch items", 500)
 
 
 """App routes"""
@@ -153,7 +153,7 @@ def register():
             conn.close()
             return redirect("/login")
         except:
-            return error("Unable to register: Email already exists", 402)
+            return error("Unable to register: Email already exists", 409)
 
     # Return html layout when GET method received
     return render_template("register.html")
@@ -174,7 +174,7 @@ def login():
             user = c.fetchone()
             conn.close()
         except:
-            return error("Unable to login: Failed to fetch login information", 402)
+            return error("Unable to login: Failed to fetch login information", 401)
 
         # Authenticate password
         if user and check_password_hash(user[2], password):
@@ -184,7 +184,7 @@ def login():
             session["status"] = user[7]
             return redirect("/")
         else:
-            return error("Unable to login: Incorrect email or password", 402)
+            return error("Unable to login: Incorrect email or password", 401)
 
     # Return html layout when GET method received
     return render_template("login.html")
@@ -229,7 +229,7 @@ def submit():
             filepath = get_unique_filepath(filename)
             image.save(filepath)
         else:
-            return error("Error uploading image: Invalid file type", 402)
+            return error("Error uploading image: Invalid file type", 415)
 
     # Upload to database
     conn = sqlite3.connect(DATABASE)
@@ -247,7 +247,7 @@ def submit():
         conn.close()
         return redirect("/")
     except:
-        return error("Unable to upload: Check inputs", 402)
+        return error("Unable to upload: Check inputs", 400)
 
 
 # Handles displaying lost items
@@ -273,7 +273,7 @@ def lost():
             items_list = c.fetchall()
             conn.close()
         except:
-            return error("Failed to fetch items", 402)
+            return error("Failed to fetch items", 500)
     else:
         conn = sqlite3.connect(DATABASE)
         c = conn.cursor()
@@ -283,7 +283,7 @@ def lost():
             items_list = c.fetchall()
             conn.close()
         except:
-            return error("Failed to fetch items", 402)
+            return error("Failed to fetch items", 500)
 
     return render_template("lost.html", items=items_list)
 
@@ -311,7 +311,7 @@ def found():
             items_list = c.fetchall()
             conn.close()
         except:
-            return error("Failed to fetch items", 402)
+            return error("Failed to fetch items", 500)
     else:
         conn = sqlite3.connect(DATABASE)
         c = conn.cursor()
@@ -327,7 +327,7 @@ def found():
             items_list = c.fetchall()
             conn.close()
         except:
-            return error("Failed to fetch items", 402)
+            return error("Failed to fetch items", 500)
 
     return render_template("found.html", items=items_list)
 
@@ -356,7 +356,7 @@ def manage():
             items_list = c.fetchall()
             conn.close()
         except:
-            return error("Failed to fetch items", 402)
+            return error("Failed to fetch items", 500)
     else:
         conn = sqlite3.connect(DATABASE)
         c = conn.cursor()
@@ -366,7 +366,7 @@ def manage():
             items_list = c.fetchall()
             conn.close()
         except:
-            return error("Failed to fetch items", 402)
+            return error("Failed to fetch items", 500)
 
     return render_template("manage.html", items=items_list)
 
@@ -392,7 +392,7 @@ def delete_item(id):
         conn.commit()
         conn.close()
     except:
-        return error("Failed to delete", 402)
+        return error("Failed to delete", 500)
     return redirect("/")
 
 
@@ -408,7 +408,7 @@ def approve_item(id):
         conn.commit()
         conn.close()
     except:
-        return error("Failed to update", 402)
+        return error("Failed to update", 500)
     return redirect("/")
 
 
