@@ -46,6 +46,19 @@ def get_unique_filepath(filename):
     return os.path.join(app.config["UPLOAD_PATH"], unique_name)
 
 
+# Save image to UPLOAD_PATH
+def save_iamge(image):
+    filepath = None
+    if image and image.filename != "":
+        if check_allowed_file(image.filename):
+            filename = secure_filename(image.filename)
+            filepath = get_unique_filepath(filename)
+            image.save(filepath)
+            return filepath
+        else:
+            return error("Error uploading image: Invalid file type", 415)
+
+
 """Handles Database"""
 
 
@@ -88,6 +101,22 @@ def init_db():
         )
     """
     )
+
+    c.execute(
+        """
+        CREATE TABLE IF NOT EXISTS requests (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              user_id INTEGER REFERENCES users(id),
+              item_id INTERGER REFERENCES items(id),
+              message TEXT NOT NULL,
+              image_path TEXT,
+              status TEXT NOT NULL DEFAULT 'pending',
+              date_requested DATETIME DEFAULT CURRENT_TIMESTAMP,
+              UNIQUE (user_id, item_id)
+        )
+    """
+    )
+
 
     conn.commit()
     conn.close()
@@ -221,15 +250,8 @@ def submit():
     description = request.form["description"] or None
     image = request.files.get("image")
 
-    # Save image to UPLOAD_PATH
-    filepath = None
-    if image and image.filename != "":
-        if check_allowed_file(image.filename):
-            filename = secure_filename(image.filename)
-            filepath = get_unique_filepath(filename)
-            image.save(filepath)
-        else:
-            return error("Error uploading image: Invalid file type", 415)
+    # Save image and get path
+    filepath = save_iamge(image)
 
     # Upload to database
     conn = sqlite3.connect(DATABASE)
@@ -264,7 +286,7 @@ def lost():
         try:
             c.execute(
                 """
-                      SELECT * FROM items 
+                      SELECT id, title, description, image_path, date_reported FROM items 
                       WHERE status = 'lost' AND approved = true 
                       AND (title LIKE ? OR description LIKE ?)
                       """,
@@ -279,7 +301,10 @@ def lost():
         c = conn.cursor()
 
         try:
-            c.execute("SELECT * FROM items WHERE status = 'lost' AND approved = true")
+            c.execute("""
+                      SELECT id, title, description, image_path, date_reported FROM items 
+                      WHERE status = 'lost' AND approved = true
+                      """)
             items_list = c.fetchall()
             conn.close()
         except:
@@ -302,7 +327,7 @@ def found():
         try:
             c.execute(
                 """
-                      SELECT * FROM items 
+                      SELECT id, title, description, image_path, date_reported FROM items 
                       WHERE status = 'found' AND approved = true 
                       AND (title LIKE ? OR description LIKE ?)
                       """,
@@ -319,9 +344,8 @@ def found():
         try:
             c.execute(
                 """
-                      SELECT * FROM items 
-                      WHERE status = 'found' 
-                      AND approved = true
+                      SELECT id, title, description, image_path, date_reported FROM items 
+                      WHERE status = 'found' AND approved = true
                       """
             )
             items_list = c.fetchall()
@@ -332,12 +356,49 @@ def found():
     return render_template("found.html", items=items_list)
 
 
+# Allows user to file for information
+@app.route("/request/<int:id>", methods=["GET", "POST"])
+@login_required
+def request_item(id):
+    # Sends request
+    if request.method == "POST":
+        # Get user info from session
+        user_id = session.get("user_id")
+
+        # Get submission from form
+        message = request.form["message"]
+        image = request.files.get("image")
+
+        # Save image and get path
+        filepath = save_iamge(image)
+
+        # Upload to database
+        conn = sqlite3.connect(DATABASE)
+        c = conn.cursor()
+
+        try:
+            c.execute(
+                """
+                INSERT INTO requests (user_id, item_id, message,  image_path) 
+                VALUES (?, ?, ?, ?)
+                """,
+                (user_id, id, message, filepath),
+            )
+            conn.commit()
+            conn.close()
+            return redirect("/")
+        except:
+            return error("Unable to upload: Check inputs", 400)
+    # Request form
+    return render_template("request.html", item_id=id)
+
+
 # Handles management of posts for admin
 @app.route("/manage", methods=["GET", "POST"])
 @login_required
 @admin_required
 def manage():
-    # Search up specific posts
+    # Allow searching
     if request.method == "POST":
         # Get keyword for querying
         keyword = request.form["keyword"]
@@ -372,7 +433,7 @@ def manage():
 
 
 # Delete submission
-@app.route("/delete/<int:id>", methods=["POST"])
+@app.route("/delete_item/<int:id>", methods=["POST"])
 @login_required
 @admin_required
 def delete_item(id):
@@ -397,7 +458,7 @@ def delete_item(id):
 
 
 # Approve submission
-@app.route("/approve/<int:id>", methods=["POST"])
+@app.route("/approve_item/<int:id>", methods=["POST"])
 @login_required
 @admin_required
 def approve_item(id):

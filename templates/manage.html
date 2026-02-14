@@ -11,7 +11,7 @@
                 <h5>
                     Approval Status: 
                     {% if item[9] == 0 %}
-                        Unapproved
+                        Pending
                     {% else %}
                         Approved
                     {% endif %}
@@ -27,10 +27,10 @@
                 <img src="{{ item[6] }}" alt="{{ item[4] }}" width="200px">
             {% endif %}
             <div class="card button">
-                <form action="{{ url_for('delete_item', id=item[0]) }}" method="post">
+                <form method="post" action="{{ url_for('delete_item', id=item[0]) }}">
                     <button type="submit">Delete</button>
                 </form>
-                <form action="{{ url_for('approve_item', id=item[0]) }}" method="post">
+                <form method="post" action="{{ url_for('approve_item', id=item[0]) }}">
                     <button type="submit">Approve</button>
                 </form>
             </div>
