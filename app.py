@@ -24,6 +24,9 @@ os.makedirs(UPLOAD_PATH, exist_ok=True)
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 
 
+"""Handles Image Files"""
+
+
 # Check if file is accepted by checking if file type matches the accepted ones
 def check_allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -42,6 +45,8 @@ def get_unique_filepath(filename):
         counter += 1
     return os.path.join(app.config["UPLOAD_PATH"], unique_name)
 
+
+"""Handles Database"""
 
 
 # Set up database
@@ -94,13 +99,15 @@ def select_items(status):
     c = conn.cursor()
 
     try:
-        c.execute("SELECT * FROM items WHERE status = ? AND approved = true", 
-                  (status))
+        c.execute("SELECT * FROM items WHERE status = ? AND approved = true", (status))
         items = c.fetchall()
         conn.close()
         return items
     except:
         return error("Failed to fetch items", 402)
+
+
+"""App routes"""
 
 
 # Set up default indexpage
@@ -122,7 +129,7 @@ def register():
         email = request.form["email"]
         password = generate_password_hash(
             request.form["password"], method="pbkdf2:sha256"
-        ) # Set hashing style to avoid scrypt
+        )  # Set hashing style to avoid scrypt
         first_name = request.form["first_name"]
         last_name = request.form["last_name"]
 
@@ -136,7 +143,10 @@ def register():
 
         try:
             c.execute(
-                "INSERT INTO users (email, password, first_name, last_name, preferred_name, phone_num) VALUES (?, ?, ?, ?, ?, ?)",
+                """
+                INSERT INTO users (email, password, first_name, last_name, preferred_name, phone_num) 
+                VALUES (?, ?, ?, ?, ?, ?)
+                """,
                 (email, password, first_name, last_name, preferred_name, phone_num),
             )
             conn.commit()
@@ -227,7 +237,10 @@ def submit():
 
     try:
         c.execute(
-            "INSERT INTO items (user_id, email, name, title, description, image_path, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            """
+            INSERT INTO items (user_id, email, name, title, description, image_path, status) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
             (user_id, email, name, title, description, filepath, status),
         )
         conn.commit()
@@ -238,52 +251,123 @@ def submit():
 
 
 # Handles displaying lost items
-@app.route("/lost")
+@app.route("/lost", methods=["GET", "POST"])
 def lost():
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
+    # Search up specific posts
+    if request.method == "POST":
+        # Get keyword for querying
+        keyword = request.form["keyword"]
 
-    try:
-        c.execute("SELECT * FROM items WHERE status = 'lost' AND approved = true")
-        items_list = c.fetchall()
-        conn.close()
-    except:
-        return error("Failed to fetch items", 402)
-    
+        conn = sqlite3.connect(DATABASE)
+        c = conn.cursor()
+
+        try:
+            c.execute(
+                """
+                      SELECT * FROM items 
+                      WHERE status = 'lost' AND approved = true 
+                      AND (title LIKE ? OR description LIKE ?)
+                      """,
+                (f"%{keyword}%", f"%{keyword}%"),
+            )
+            items_list = c.fetchall()
+            conn.close()
+        except:
+            return error("Failed to fetch items", 402)
+    else:
+        conn = sqlite3.connect(DATABASE)
+        c = conn.cursor()
+
+        try:
+            c.execute("SELECT * FROM items WHERE status = 'lost' AND approved = true")
+            items_list = c.fetchall()
+            conn.close()
+        except:
+            return error("Failed to fetch items", 402)
+
     return render_template("lost.html", items=items_list)
 
 
 # Handles displaying found items
-@app.route("/found")
+@app.route("/found", methods=["GET", "POST"])
 def found():
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
+    # Search up specific posts
+    if request.method == "POST":
+        # Get keyword for querying
+        keyword = request.form["keyword"]
 
-    try:
-        c.execute("SELECT * FROM items WHERE status = 'found' AND approved = true")
-        items_list = c.fetchall()
-        conn.close()
-    except:
-        return error("Failed to fetch items", 402)
-    
+        conn = sqlite3.connect(DATABASE)
+        c = conn.cursor()
+
+        try:
+            c.execute(
+                """
+                      SELECT * FROM items 
+                      WHERE status = 'found' AND approved = true 
+                      AND (title LIKE ? OR description LIKE ?)
+                      """,
+                (f"%{keyword}%", f"%{keyword}%"),
+            )
+            items_list = c.fetchall()
+            conn.close()
+        except:
+            return error("Failed to fetch items", 402)
+    else:
+        conn = sqlite3.connect(DATABASE)
+        c = conn.cursor()
+
+        try:
+            c.execute(
+                """
+                      SELECT * FROM items 
+                      WHERE status = 'found' 
+                      AND approved = true
+                      """
+            )
+            items_list = c.fetchall()
+            conn.close()
+        except:
+            return error("Failed to fetch items", 402)
+
     return render_template("found.html", items=items_list)
 
 
 # Handles management of posts for admin
-@app.route("/manage")
+@app.route("/manage", methods=["GET", "POST"])
 @login_required
 @admin_required
 def manage():
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
+    # Search up specific posts
+    if request.method == "POST":
+        # Get keyword for querying
+        keyword = request.form["keyword"]
 
-    try:
-        c.execute("SELECT * FROM items")
-        items_list = c.fetchall()
-        conn.close()
-    except:
-        return error("Failed to fetch items", 402)
-    
+        conn = sqlite3.connect(DATABASE)
+        c = conn.cursor()
+
+        try:
+            c.execute(
+                """
+                      SELECT * FROM items 
+                      WHERE title LIKE ? OR description LIKE ?
+                      """,
+                (f"%{keyword}%", f"%{keyword}%"),
+            )
+            items_list = c.fetchall()
+            conn.close()
+        except:
+            return error("Failed to fetch items", 402)
+    else:
+        conn = sqlite3.connect(DATABASE)
+        c = conn.cursor()
+
+        try:
+            c.execute("SELECT * FROM items")
+            items_list = c.fetchall()
+            conn.close()
+        except:
+            return error("Failed to fetch items", 402)
+
     return render_template("manage.html", items=items_list)
 
 
@@ -328,7 +412,10 @@ def approve_item(id):
     return redirect("/")
 
 
-# Debugging
+"""Debugging"""
+
+
+# Check if Flask is ran directly
 if __name__ == "__main__":
     init_db()
     app.run(debug=True, port=8000)

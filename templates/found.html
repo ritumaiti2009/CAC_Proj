@@ -1,10 +1,10 @@
-{% extends "layout.html" %}
+{% extends "list_layout.html" %}
 
 {% block title %}
     Found Items
 {% endblock %}
 
-{% block main %}
+{% block card %}
     {% for item in items %}
         <div>
             <h4>{{ item[7] }}</h4>
