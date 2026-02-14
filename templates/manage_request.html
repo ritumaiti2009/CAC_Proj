@@ -8,18 +8,19 @@
     {% for request in requests %}
         <div class="card">
             <div class="card content">
-                <h5>Approval Status: {{ request[9] }}</h5>
-                <h5>Status: {{ request[1] }}</h5>
-                <h5>Post Time: {{ request[7] }}</h5>
-                <h5>Poster Email: {{ request[2] }}</h5>
-                <h5>Poster Name: {{ request[3] }}</h5>
-                <h5>Requester Email: {{ request[4] }}</h5>
-                <h5>Requester Name: {{ request[5] }}</h5>
-                <h4>Title of request: {{ request[0] }}</h4>
-                <p>Requester Message: {{ request[6] }}<p>
+                <h5>Approval Status: {{ request["request_status"] }}</h5>
+                <h5>Item Status: {{ request["item_status"] }}</h5>
+                <h5>Request Time: {{ request["date_requested"] }}</h5>
+                <h5>Poster Email: {{ request["poster_email"] }}</h5>
+                <h5>Poster Name: {{ request["poster_name"] }}</h5>
+                <h5>Requester Email: {{ request["user_email"] }}</h5>
+                <h5>Requester Name: {{ request["user_name"] }}</h5>
+                <h4>Title of item post: {{ request["title"] }}</h4>
+                <p>Requester Message: {{ request["message"] }}<p>
             </div>
-            {% if request[8] %}
-                <img src="{{ request[8] }}" alt="{{ request[6] }}" width="200px">
+            {% if request["image_path"] %}
+                Image Evidence
+                <img src="{{ request['image_path'] }}" alt="{{ request['title'] }}" width="200px">
             {% endif %}
             
         </div>

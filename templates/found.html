@@ -7,13 +7,13 @@
 {% block card %}
     {% for item in items %}
         <div class="card">
-            <h5>Time: {{ item[3] }}</h5>
-            <h4>Title: {{ item[0] }}</h4>
-            <p>Description: {{ item[1] }}<p>
-            {% if item[2] %}
-                <img src="{{ item[2] }}" alt="{{ item[0] }}" width="200px">
+            <h5>Time: {{ item["date_reported"] }}</h5>
+            <h4>Title: {{ item["title"] }}</h4>
+            <p>Description: {{ item["description"] }}<p>
+            {% if item["image_path"] %}
+                <img src="{{ item['image_path'] }}" alt="{{ item['title'] }}" width="200px">
             {% endif %}
-            <form method="GET" action="{{ url_for('request_item', id=item[0]) }}">
+            <form method="GET" action="{{ url_for('request_item', id=item['id']) }}">
                 <button type="submit">Request Info</button>
             </form>
         </div>

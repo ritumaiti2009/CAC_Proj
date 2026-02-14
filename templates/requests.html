@@ -7,19 +7,19 @@
 {% block card %}
     {% for request in requests %}
         <div class="card">
-            <h5>Request Status: {{ request[5] }}</h5>
-            <h5>Time: {{ request[7] }}</h5>
-            <h4>Title: {{ request[0] }}</h4>
-            <h5>Item Status: {{ request[1] }}</h5>
-            {% if request[8] or request[9] %}
+            <h5>Request Status: {{ request["request_status"] }}</h5>
+            <h5>Time: {{ request["date_requested"] }}</h5>
+            <h4>Title: {{ request["title"] }}</h4>
+            <h5>Item Status: {{ request["item_status"] }}</h5>
+            {% if request["email"] and request["name"] %}
                 <h4>
                     Contact Info:
-                    {{ request[8] }}
-                    {{ request[9] }}
+                    {{ request["email"] }}
+                    {{ request["name"] }}
                 </h4>
             {% endif %}
-            {% if request[4] %}
-                <img src="{{ request[4] }}" alt="{{ request[0] }}" width="200px">
+            {% if request["image_path"] %}
+                <img src="{{ request['image_path'] }}" alt="{{ request['title'] }}" width="200px">
             {% endif %}
         </div>
     {% endfor %}

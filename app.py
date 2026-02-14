@@ -121,20 +121,6 @@ def init_db():
     conn.close()
 
 
-# Receive items post from database
-def select_items(status):
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
-
-    try:
-        c.execute("SELECT * FROM items WHERE status = ? AND approved = true", (status))
-        items = c.fetchall()
-        conn.close()
-        return items
-    except:
-        return error("Failed to fetch items", 500)
-
-
 """App routes"""
 
 
@@ -280,6 +266,7 @@ def lost():
         keyword = request.form["keyword"]
 
         conn = sqlite3.connect(DATABASE)
+        conn.row_factory = sqlite3.Row
         c = conn.cursor()
 
         try:
@@ -297,6 +284,7 @@ def lost():
             return error("Failed to fetch items", 500)
     else:
         conn = sqlite3.connect(DATABASE)
+        conn.row_factory = sqlite3.Row
         c = conn.cursor()
 
         try:
@@ -323,6 +311,7 @@ def found():
         keyword = request.form["keyword"]
 
         conn = sqlite3.connect(DATABASE)
+        conn.row_factory = sqlite3.Row
         c = conn.cursor()
 
         try:
@@ -340,6 +329,7 @@ def found():
             return error("Failed to fetch items", 500)
     else:
         conn = sqlite3.connect(DATABASE)
+        conn.row_factory = sqlite3.Row
         c = conn.cursor()
 
         try:
@@ -374,6 +364,7 @@ def request_item(id):
 
         # Upload to database
         conn = sqlite3.connect(DATABASE)
+        conn.row_factory = sqlite3.Row
         c = conn.cursor()
 
         try:
@@ -403,6 +394,7 @@ def requests():
         keyword = request.form["keyword"]
 
         conn = sqlite3.connect(DATABASE)
+        conn.row_factory = sqlite3.Row
         c = conn.cursor()
 
         try:
@@ -410,12 +402,14 @@ def requests():
             c.execute(
                 """
                       SELECT 
-                      items.title,
-                      items.status,
-                      requests.message,
-                      requests.date_requested,
-                      requests.image_path,
-                      requests.status
+                      items.title AS title,
+                      items.status AS item_status,
+                      requests.message AS messgage,
+                      requests.date_requested AS date_requested,
+                      requests.image_path AS image_path,
+                      requests.status AS request_status
+                      items.email AS email,
+                      items.name AS name
                       FROM requests
                       INNER JOIN items ON requests.item_id = items.id
                       WHERE requests.status = 'approved'
@@ -430,12 +424,12 @@ def requests():
             c.execute(
                 """
                       SELECT 
-                      items.title,
-                      items.status,
-                      requests.message,
-                      requests.date_requested,
-                      requests.image_path,
-                      requests.status
+                      items.title AS title,
+                      items.status AS item_status,
+                      requests.message AS messgage,
+                      requests.date_requested AS date_requested,
+                      requests.image_path AS image_path,
+                      requests.status AS request_status
                       FROM requests
                       INNER JOIN items ON requests.item_id = items.id
                       WHERE NOT requests.status = 'approved'
@@ -451,6 +445,7 @@ def requests():
             return error("Failed to fetch requests", 500)
     else:
         conn = sqlite3.connect(DATABASE)
+        conn.row_factory = sqlite3.Row
         c = conn.cursor()
 
         try:
@@ -458,14 +453,14 @@ def requests():
             c.execute(
                 """
                       SELECT 
-                      items.title,
-                      items.status,
-                      items.email,
-                      items.name,
-                      requests.message,
-                      requests.date_requested,
-                      requests.image_path,
-                      requests.status
+                      items.title AS title,
+                      items.status AS item_status,
+                      requests.message AS messgage,
+                      requests.date_requested AS date_requested,
+                      requests.image_path AS image_path,
+                      requests.status AS request_status,
+                      items.email AS email,
+                      items.name AS name
                       FROM requests
                       INNER JOIN items ON requests.item_id = items.id
                       WHERE requests.status = 'approved'
@@ -477,15 +472,15 @@ def requests():
             c.execute(
                 """
                       SELECT 
-                      items.title,
-                      items.status,
-                      requests.message,
-                      requests.date_requested,
-                      requests.image_path,
-                      requests.status
+                      items.title AS title,
+                      items.status AS item_status,
+                      requests.message AS messgage,
+                      requests.date_requested AS date_requested,
+                      requests.image_path AS image_path,
+                      requests.status AS request_status
                       FROM requests
                       INNER JOIN items ON requests.item_id = items.id
-                      WHERE NOT requests.status = 'approved'
+                      WHERE requests.status != 'approved'
                       """
             )
             requests_list.extend(c.fetchall())
@@ -508,6 +503,7 @@ def manage_items():
         keyword = request.form["keyword"]
 
         conn = sqlite3.connect(DATABASE)
+        conn.row_factory = sqlite3.Row
         c = conn.cursor()
 
         try:
@@ -524,6 +520,7 @@ def manage_items():
             return error("Failed to fetch items", 500)
     else:
         conn = sqlite3.connect(DATABASE)
+        conn.row_factory = sqlite3.Row
         c = conn.cursor()
 
         try:
@@ -543,6 +540,7 @@ def manage_items():
 def delete_item(id):
     try:
         conn = sqlite3.connect(DATABASE)
+        conn.row_factory = sqlite3.Row
         c = conn.cursor()
 
         # Delete image if it exists
@@ -568,6 +566,7 @@ def delete_item(id):
 def approve_item(id):
     try:
         conn = sqlite3.connect(DATABASE)
+        conn.row_factory = sqlite3.Row
         c = conn.cursor()
         c.execute("UPDATE items SET approved = true WHERE id = ?", (id,))
         conn.commit()
@@ -588,22 +587,25 @@ def manage_requests():
         keyword = request.form["keyword"]
 
         conn = sqlite3.connect(DATABASE)
+        conn.row_factory = sqlite3.Row
         c = conn.cursor()
 
         try:
             c.execute(
                 """
                     SELECT 
-                    items.title,
-                    items.status,
-                    items.email,
-                    items.name,
-                    users.email,
-                    users.preferred_name,
-                    requests.message,
-                    requests.date_requested,
-                    requests.image_path,
-                    requests.status
+                    items.title AS title,
+                    items.status AS item_status,
+                    items.email AS poster_email,
+                    items.name AS poster_name,
+                    users.email AS user_email,
+                    COALESCE(users.preferred_name, 
+                    CONCAT(users.first_name, ' ', users.last_name)) 
+                    AS user_name,
+                    requests.message AS message,
+                    requests.date_requested AS date_requested,
+                    requests.image_path AS image_path,
+                    requests.status AS request_status
                     FROM requests
                     INNER JOIN items ON requests.item_id = items.id
                     INNER JOIN users ON requests.user_id = users.id
@@ -618,22 +620,25 @@ def manage_requests():
             return error("Failed to fetch requests", 500)
     else:
         conn = sqlite3.connect(DATABASE)
+        conn.row_factory = sqlite3.Row
         c = conn.cursor()
 
         try:
             c.execute(
                 """
                     SELECT 
-                    items.title,
-                    items.status,
-                    users.email,
-                    users.preferred_name,
-                    requests.message,
-                    requests.date_requested,
-                    requests.image_path,
-                    requests.status,
-                    items.email,
-                    items.name
+                    items.title AS title,
+                    items.status AS item_status,
+                    items.email AS poster_email,
+                    items.name AS poster_name,
+                    users.email AS user_email,
+                    COALESCE(users.preferred_name, 
+                    CONCAT(users.first_name, ' ', users.last_name)) 
+                    AS user_name,
+                    requests.message AS message,
+                    requests.date_requested AS date_requested,
+                    requests.image_path AS image_path,
+                    requests.status AS request_status
                     FROM requests
                     INNER JOIN items ON requests.item_id = items.id
                     INNER JOIN users ON requests.user_id = users.id

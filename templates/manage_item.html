@@ -10,27 +10,27 @@
             <div class="card content">
                 <h5>
                     Approval Status: 
-                    {% if item[9] == 0 %}
+                    {% if item["approved"] == 0 %}
                         Pending
                     {% else %}
                         Approved
                     {% endif %}
                 </h5>
-                <h5>Status: {{ item[8] }}</h5>
-                <h5>Post Time: {{ item[7] }}</h5>
-                <h5>Email: {{ item[2] }}</h5>
-                <h5>Name: {{ item[3] }}</h5>
-                <h4>Title: {{ item[4] }}</h4>
-                <p>Description: {{ item[5] }}<p>
+                <h5>Status: {{ item["status"] }}</h5>
+                <h5>Post Time: {{ item["date_reported"] }}</h5>
+                <h5>Email: {{ item["email"] }}</h5>
+                <h5>Name: {{ item["name"] }}</h5>
+                <h4>Title: {{ item["title"] }}</h4>
+                <p>Description: {{ item["description"] }}<p>
             </div>
-            {% if item[6] %}
-                <img src="{{ item[6] }}" alt="{{ item[4] }}" width="200px">
+            {% if item["image_path"] %}
+                <img src="{{ item['image_path'] }}" alt="{{ item['title'] }}" width="200px">
             {% endif %}
             <div class="card button">
-                <form method="post" action="{{ url_for('delete_item', id=item[0]) }}">
+                <form method="post" action="{{ url_for('delete_item', id=item['id']) }}">
                     <button type="submit">Delete</button>
                 </form>
-                <form method="post" action="{{ url_for('approve_item', id=item[0]) }}">
+                <form method="post" action="{{ url_for('approve_item', id=item['id']) }}">
                     <button type="submit">Approve</button>
                 </form>
             </div>
