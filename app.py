@@ -194,7 +194,9 @@ def login():
         if user and check_password_hash(user[2], password):
             session["user_id"] = user[0]
             session["user"] = email
-            session["name"] = f"{user[3]} {user[4]} ({user[5]})"
+            session["name"] = f"{user[3]} {user[4]}"
+            if user[5]:
+                session["name"] += f" ({user[5]})"
             session["status"] = user[7]
             return redirect("/")
         else:

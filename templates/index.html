@@ -5,31 +5,38 @@
 {% endblock %}
 
 {% block main %}
-    <h2>Welcome {{ user }}!</h2><br>
-    <h2>Form to report an item</h2>
-    <form method="post" action="/submit" enctype="multipart/form-data">
-        <label>
-            <input type="radio" name="type" value="lost" checked>
-            Lost
-        </label>  
-        <label>
-            <input type="radio" name="type" value="found">
-            Found
-        </label><br>
+    <div class = "reportCard">
+        <h1>Welcome {{ session.get("name") }}!</h1>
+        <h2>Report your item</h2>
+        <form class="reportForm" method="post" action="/submit" enctype="multipart/form-data">
+            <div class="radioButtons">
+                <label>
+                    <input type="radio" name="type" value="lost" checked>
+                    Lost
+                </label>  
+                <label>
+                    <input type="radio" name="type" value="found">
+                    Found
+                </label>
+            </div><br>
+            <hr>
 
-        {% if session.get("user") %}
-            Required<br>
-            Title: <input type="text" name="title" required><br><br>
-        {% else %}
-            Required<br>
-            Your Email: <input type="email" name="email" required><br><br>
-            Your Name: <input type="text" name="name" required><br><br>
-            Title: <input type="text" name="title" required><br><br>
-        {% endif %}
+            {% if session.get("user") %}
+                <h5>Required</h5><br>
+                <label>Name of Item: <input type="text" name="title" required></label>
+            {% else %}
+                <h5>Required</h5><br>
+                <label>Name of Item: <input type="text" name="title" required></label><br>
+                <label>Your Email: <input type="text" name="email" required></label><br>
+                <label>Your Name: <input type="text" name="name" required></label>
+            {% endif %}
 
-        Optional<br>
-        Description: <input type="text" name="description"><br><br>
-        Image: <input type="file" name="image" accept="image/*"><br><br>
-        <button type="submit">Upload</button>
-    </form>
+            <hr>
+            <h5>Optional</h5><br>
+            <label>Description: <input type="text" name="description"></label><br>
+            <label>Image: <input type="file" name="image" accept="image/*"></label><br>
+            <hr>
+            <button id="submit" type="submit">Submit</button>
+        </form>
+    </div>
 {% endblock %}
