@@ -277,7 +277,7 @@ def lost():
                       items.title AS title, 
                       items.description AS description, 
                       items.image_path AS image_path, 
-                      items.date_reported AS date_reported,
+                      datetime(items.date_reported, 'localtime') AS date_reported,
                       requests.user_id AS user_id 
                       FROM items 
                       LEFT JOIN requests
@@ -304,7 +304,7 @@ def lost():
                       items.title AS title, 
                       items.description AS description, 
                       items.image_path AS image_path, 
-                      items.date_reported AS date_reported,
+                      datetime(items.date_reported, 'localtime') AS date_reported,
                       requests.user_id AS user_id 
                       FROM items 
                       LEFT JOIN requests
@@ -340,7 +340,7 @@ def found():
                       items.title AS title, 
                       items.description AS description, 
                       items.image_path AS image_path, 
-                      items.date_reported AS date_reported,
+                      datetime(items.date_reported, 'localtime') AS date_reported,
                       requests.user_id AS user_id 
                       FROM items 
                       LEFT JOIN requests
@@ -366,7 +366,7 @@ def found():
                       items.title AS title, 
                       items.description AS description, 
                       items.image_path AS image_path, 
-                      items.date_reported AS date_reported,
+                      datetime(items.date_reported, 'localtime') AS date_reported,
                       requests.user_id AS user_id 
                       FROM items 
                       LEFT JOIN requests
@@ -439,7 +439,7 @@ def requests():
                       items.title AS title,
                       items.status AS item_status,
                       requests.message AS messgage,
-                      requests.date_requested AS date_requested,
+                      datetime(requests.date_requested, 'localtime') AS date_requested,
                       requests.image_path AS image_path,
                       requests.status AS request_status
                       items.email AS email,
@@ -461,7 +461,7 @@ def requests():
                       items.title AS title,
                       items.status AS item_status,
                       requests.message AS messgage,
-                      requests.date_requested AS date_requested,
+                      datetime(requests.date_requested, 'localtime') AS date_requested,
                       requests.image_path AS image_path,
                       requests.status AS request_status
                       FROM requests
@@ -490,7 +490,7 @@ def requests():
                       items.title AS title,
                       items.status AS item_status,
                       requests.message AS messgage,
-                      requests.date_requested AS date_requested,
+                      datetime(requests.date_requested, 'localtime') AS date_requested,
                       requests.image_path AS image_path,
                       requests.status AS request_status,
                       items.email AS email,
@@ -509,7 +509,7 @@ def requests():
                       items.title AS title,
                       items.status AS item_status,
                       requests.message AS messgage,
-                      requests.date_requested AS date_requested,
+                      datetime(requests.date_requested, 'localtime') AS date_requested,
                       requests.image_path AS image_path,
                       requests.status AS request_status
                       FROM requests
@@ -543,8 +543,9 @@ def manage_items():
         try:
             c.execute(
                 """
-                      SELECT * FROM items 
-                      WHERE title LIKE ? OR description LIKE ?
+                      SELECT *, 
+                      datetime(date_reported, 'localtime') AS localdate
+                      FROM items WHERE title LIKE ? OR description LIKE ?
                       """,
                 (f"%{keyword}%", f"%{keyword}%"),
             )
@@ -558,7 +559,13 @@ def manage_items():
         c = conn.cursor()
 
         try:
-            c.execute("SELECT * FROM items")
+            c.execute(
+                """
+                      SELECT *, 
+                      datetime(date_reported, 'localtime') AS localdate
+                      FROM items
+                      """
+                      )
             items_list = c.fetchall()
             conn.close()
         except:
@@ -635,7 +642,7 @@ def manage_requests():
                     CONCAT(users.first_name, ' ', users.last_name)) 
                     AS user_name,
                     requests.message AS message,
-                    requests.date_requested AS date_requested,
+                    datetime(requests.date_requested, 'localtime') AS date_requested,
                     requests.image_path AS image_path,
                     requests.status AS request_status
                     FROM requests
@@ -669,7 +676,7 @@ def manage_requests():
                     CONCAT(users.first_name, ' ', users.last_name)) 
                     AS user_name,
                     requests.message AS message,
-                    requests.date_requested AS date_requested,
+                    datetime(requests.date_requested, 'localtime') AS date_requested,
                     requests.image_path AS image_path,
                     requests.status AS request_status
                     FROM requests
