@@ -27,11 +27,13 @@
                 <img src="{{ item['image_path'] }}" alt="{{ item['title'] }}" width="200px">
             {% endif %}
             <div class="card button">
+                {% if item["approved"] == 0 %}
+                    <form method="post" action="{{ url_for('approve_item', id=item['id']) }}">
+                        <button type="submit">Approve</button>
+                    </form>
+                {% endif %}
                 <form method="post" action="{{ url_for('delete_item', id=item['id']) }}">
                     <button type="submit">Delete</button>
-                </form>
-                <form method="post" action="{{ url_for('approve_item', id=item['id']) }}">
-                    <button type="submit">Approve</button>
                 </form>
             </div>
         </div>

@@ -22,7 +22,16 @@
                 Image Evidence
                 <img src="{{ request['image_path'] }}" alt="{{ request['title'] }}" width="200px">
             {% endif %}
-            
+            {% if request["request_status"] == "pending" %}
+                <div class="card button">
+                    <form method="post" action="{{ url_for('approve_request', id=request['id']) }}">
+                        <button type="submit">Approve</button>
+                    </form>
+                    <form method="post" action="{{ url_for('reject_request', id=request['id']) }}">
+                        <button type="submit">Reject</button>
+                    </form>
+                </div>
+            {% endif %}
         </div>
     {% endfor %}
 {% endblock %}

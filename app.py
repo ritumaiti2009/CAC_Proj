@@ -47,7 +47,7 @@ def get_unique_filepath(filename):
 
 
 # Save image to UPLOAD_PATH
-def save_iamge(image):
+def save_image(image):
     filepath = None
     if image and image.filename != "":
         if check_allowed_file(image.filename):
@@ -236,7 +236,7 @@ def submit():
     image = request.files.get("image")
 
     # Save image and get path
-    filepath = save_iamge(image)
+    filepath = save_image(image)
 
     # Upload to database
     conn = sqlite3.connect(DATABASE)
@@ -272,9 +272,18 @@ def lost():
         try:
             c.execute(
                 """
-                      SELECT id, title, description, image_path, date_reported FROM items 
-                      WHERE status = 'lost' AND approved = true 
-                      AND (title LIKE ? OR description LIKE ?)
+                      SELECT 
+                      items.id AS id, 
+                      items.title AS title, 
+                      items.description AS description, 
+                      items.image_path AS image_path, 
+                      items.date_reported AS date_reported,
+                      requests.user_id AS user_id 
+                      FROM items 
+                      LEFT JOIN requests
+                      ON items.id = requests.item_id
+                      WHERE items.status = 'lost' AND items.approved = true
+                      AND (items.title LIKE ? OR items.description LIKE ?)
                       """,
                 (f"%{keyword}%", f"%{keyword}%"),
             )
@@ -290,8 +299,17 @@ def lost():
         try:
             c.execute(
                 """
-                      SELECT id, title, description, image_path, date_reported FROM items 
-                      WHERE status = 'lost' AND approved = true
+                      SELECT 
+                      items.id AS id, 
+                      items.title AS title, 
+                      items.description AS description, 
+                      items.image_path AS image_path, 
+                      items.date_reported AS date_reported,
+                      requests.user_id AS user_id 
+                      FROM items 
+                      LEFT JOIN requests
+                      ON items.id = requests.item_id
+                      WHERE items.status = 'lost' AND items.approved = true
                       """
             )
             items_list = c.fetchall()
@@ -317,9 +335,18 @@ def found():
         try:
             c.execute(
                 """
-                      SELECT id, title, description, image_path, date_reported FROM items 
-                      WHERE status = 'found' AND approved = true 
-                      AND (title LIKE ? OR description LIKE ?)
+                      SELECT 
+                      items.id AS id, 
+                      items.title AS title, 
+                      items.description AS description, 
+                      items.image_path AS image_path, 
+                      items.date_reported AS date_reported,
+                      requests.user_id AS user_id 
+                      FROM items 
+                      LEFT JOIN requests
+                      ON items.id = requests.item_id
+                      WHERE items.status = 'found' AND items.approved = true
+                      AND (items.title LIKE ? OR items.description LIKE ?)
                       """,
                 (f"%{keyword}%", f"%{keyword}%"),
             )
@@ -334,9 +361,17 @@ def found():
 
         try:
             c.execute("""
-                      SELECT id, title, description, image_path, date_reported 
+                      SELECT 
+                      items.id AS id, 
+                      items.title AS title, 
+                      items.description AS description, 
+                      items.image_path AS image_path, 
+                      items.date_reported AS date_reported,
+                      requests.user_id AS user_id 
                       FROM items 
-                      WHERE status = 'found' AND approved = true
+                      LEFT JOIN requests
+                      ON items.id = requests.item_id
+                      WHERE items.status = 'found' AND items.approved = true
                       """)
             items_list = c.fetchall()
             conn.close()
@@ -360,17 +395,16 @@ def request_item(id):
         image = request.files.get("image")
 
         # Save image and get path
-        filepath = save_iamge(image)
+        filepath = save_image(image)
 
         # Upload to database
         conn = sqlite3.connect(DATABASE)
-        conn.row_factory = sqlite3.Row
         c = conn.cursor()
 
         try:
             c.execute(
                 """
-                INSERT INTO requests (user_id, item_id, message,  image_path) 
+                INSERT INTO requests (user_id, item_id, message, image_path) 
                 VALUES (?, ?, ?, ?)
                 """,
                 (user_id, id, message, filepath),
@@ -532,6 +566,20 @@ def manage_items():
 
     return render_template("manage_item.html", items=items_list)
 
+# Approve submission
+@app.route("/approve_item/<int:id>", methods=["POST"])
+@login_required
+@admin_required
+def approve_item(id):
+    try:
+        conn = sqlite3.connect(DATABASE)
+        c = conn.cursor()
+        c.execute("UPDATE items SET approved = true WHERE id = ?", (id,))
+        conn.commit()
+        conn.close()
+    except:
+        return error("Failed to update", 500)
+    return redirect("/")
 
 # Delete submission
 @app.route("/delete_item/<int:id>", methods=["POST"])
@@ -559,23 +607,6 @@ def delete_item(id):
     return redirect("/")
 
 
-# Approve submission
-@app.route("/approve_item/<int:id>", methods=["POST"])
-@login_required
-@admin_required
-def approve_item(id):
-    try:
-        conn = sqlite3.connect(DATABASE)
-        conn.row_factory = sqlite3.Row
-        c = conn.cursor()
-        c.execute("UPDATE items SET approved = true WHERE id = ?", (id,))
-        conn.commit()
-        conn.close()
-    except:
-        return error("Failed to update", 500)
-    return redirect("/")
-
-
 # Handles management of requests for admin
 @app.route("/manage_requests", methods=["GET", "POST"])
 @login_required
@@ -594,6 +625,7 @@ def manage_requests():
             c.execute(
                 """
                     SELECT 
+                    requests.id as id,
                     items.title AS title,
                     items.status AS item_status,
                     items.email AS poster_email,
@@ -627,6 +659,7 @@ def manage_requests():
             c.execute(
                 """
                     SELECT 
+                    requests.id as id,
                     items.title AS title,
                     items.status AS item_status,
                     items.email AS poster_email,
@@ -652,6 +685,37 @@ def manage_requests():
     return render_template("manage_request.html", requests=request_list)
 
 
+# Approve request
+@app.route("/approve_request/<int:id>", methods=["POST"])
+@login_required
+@admin_required
+def approve_request(id):
+    try:
+        conn = sqlite3.connect(DATABASE)
+        c = conn.cursor()
+        c.execute("UPDATE requests SET status = 'approved' WHERE id = ?", (id,))
+        conn.commit()
+        conn.close()
+    except:
+        return error("Failed to update", 500)
+    return redirect("/")
+
+# Reject request
+@app.route("/reject_request/<int:id>", methods=["POST"])
+@login_required
+@admin_required
+def reject_request(id):
+    try:
+        conn = sqlite3.connect(DATABASE)
+        c = conn.cursor()
+        c.execute("UPDATE requests SET status = 'rejected' WHERE id = ?", (id,))
+        conn.commit()
+        conn.close()
+        conn.close()
+    except:
+        return error("Failed to update", 500)
+    return redirect("/")
+
 """Debugging"""
 
 
@@ -659,14 +723,3 @@ def manage_requests():
 if __name__ == "__main__":
     init_db()
     app.run(debug=True, port=8000)
-
-"""
-<div class="card button">
-                <form method="post" action="{{ url_for('approve_request', id=item[10]) }}">
-                    <button type="submit">Delete</button>
-                </form>
-                <form method="post" action="{{ url_for('reject_request', id=item[10]) }}">
-                    <button type="submit">Approve</button>
-                </form>
-            </div>
-"""

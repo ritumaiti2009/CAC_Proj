@@ -13,9 +13,11 @@
             {% if item["image_path"] %}
                 <img src="{{ item['image_path'] }}" alt="{{ item['title'] }}" width="200px">
             {% endif %}
-            <form method="GET" action="{{ url_for('request_item', id=item['id']) }}">
-                <button type="submit">Request Info</button>
-            </form>
+            {% if session.get("user_id") != item["user_id"] %}
+                <form method="GET" action="{{ url_for('request_item', id=item['id']) }}">
+                    <button type="submit">Request Info</button>
+                </form>
+            {% endif %}
         </div>
     {% endfor %}
 {% endblock %}
