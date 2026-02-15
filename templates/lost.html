@@ -7,13 +7,16 @@
 {% block card %}
     {% for item in items %}
         <div class="card">
-            <h5>Post Time: {{ item[7] }}</h5>
-            <h5>Email: {{ item[2] }}</h5>
-            <h5>Name: {{ item[3] }}</h5>
-            <h4>Title: {{ item[4] }}</h4>
-            <p>Description: {{ item[5] }}<p>
-            {% if item[6] %}
-                <img src="{{ item[6] }}" alt="{{ item[4] }}" width="200px">
+            <h5>Time: {{ item["date_reported"] }}</h5>
+            <h4>Title: {{ item["title"] }}</h4>
+            <p>Description: {{ item["description"] }}<p>
+            {% if item["image_path"] %}
+                <img src="{{ item['image_path'] }}" alt="{{ item['title'] }}" width="200px">
+            {% endif %}
+            {% if session.get("user_id") != item["user_id"] %}
+                <form method="GET" action="{{ url_for('request_item', id=item['id']) }}">
+                    <button type="submit">Request Info</button>
+                </form>
             {% endif %}
         </div>
     {% endfor %}

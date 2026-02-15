@@ -1,0 +1,26 @@
+{% extends "list_layout.html" %}
+
+{% block title %}
+    Lost Items
+{% endblock %}
+
+{% block card %}
+    {% for request in requests %}
+        <div class="card">
+            <h5>Request Status: {{ request["request_status"] }}</h5>
+            <h5>Time: {{ request["date_requested"] }}</h5>
+            <h4>Title: {{ request["title"] }}</h4>
+            <h5>Item Status: {{ request["item_status"] }}</h5>
+            {% if request["email"] and request["name"] %}
+                <h4>
+                    Contact Info:
+                    {{ request["email"] }}
+                    {{ request["name"] }}
+                </h4>
+            {% endif %}
+            {% if request["image_path"] %}
+                <img src="{{ request['image_path'] }}" alt="{{ request['title'] }}" width="200px">
+            {% endif %}
+        </div>
+    {% endfor %}
+{% endblock %}

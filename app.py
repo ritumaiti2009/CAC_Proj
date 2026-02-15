@@ -46,6 +46,19 @@ def get_unique_filepath(filename):
     return os.path.join(app.config["UPLOAD_PATH"], unique_name)
 
 
+# Save image to UPLOAD_PATH
+def save_image(image):
+    filepath = None
+    if image and image.filename != "":
+        if check_allowed_file(image.filename):
+            filename = secure_filename(image.filename)
+            filepath = get_unique_filepath(filename)
+            image.save(filepath)
+            return filepath
+        else:
+            return error("Error uploading image: Invalid file type", 415)
+
+
 """Handles Database"""
 
 
@@ -89,22 +102,23 @@ def init_db():
     """
     )
 
+    c.execute(
+        """
+        CREATE TABLE IF NOT EXISTS requests (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              user_id INTEGER REFERENCES users(id),
+              item_id INTERGER REFERENCES items(id),
+              message TEXT NOT NULL,
+              image_path TEXT,
+              status TEXT NOT NULL DEFAULT 'pending',
+              date_requested DATETIME DEFAULT CURRENT_TIMESTAMP,
+              UNIQUE (user_id, item_id)
+        )
+    """
+    )
+
     conn.commit()
     conn.close()
-
-
-# Receive items post from database
-def select_items(status):
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
-
-    try:
-        c.execute("SELECT * FROM items WHERE status = ? AND approved = true", (status))
-        items = c.fetchall()
-        conn.close()
-        return items
-    except:
-        return error("Failed to fetch items", 402)
 
 
 """App routes"""
@@ -153,7 +167,7 @@ def register():
             conn.close()
             return redirect("/login")
         except:
-            return error("Unable to register: Email already exists", 402)
+            return error("Unable to register: Email already exists", 409)
 
     # Return html layout when GET method received
     return render_template("register.html")
@@ -174,17 +188,17 @@ def login():
             user = c.fetchone()
             conn.close()
         except:
-            return error("Unable to login: Failed to fetch login information", 402)
+            return error("Unable to login: Failed to fetch login information", 401)
 
         # Authenticate password
         if user and check_password_hash(user[2], password):
             session["user_id"] = user[0]
             session["user"] = email
-            session["name"] = f"{user[3]} {user[4]}"
+            session["name"] = f"{user[3]} {user[4]} ({user[5]})"
             session["status"] = user[7]
             return redirect("/")
         else:
-            return error("Unable to login: Incorrect email or password", 402)
+            return error("Unable to login: Incorrect email or password", 401)
 
     # Return html layout when GET method received
     return render_template("login.html")
@@ -221,15 +235,8 @@ def submit():
     description = request.form["description"] or None
     image = request.files.get("image")
 
-    # Save image to UPLOAD_PATH
-    filepath = None
-    if image and image.filename != "":
-        if check_allowed_file(image.filename):
-            filename = secure_filename(image.filename)
-            filepath = get_unique_filepath(filename)
-            image.save(filepath)
-        else:
-            return error("Error uploading image: Invalid file type", 402)
+    # Save image and get path
+    filepath = save_image(image)
 
     # Upload to database
     conn = sqlite3.connect(DATABASE)
@@ -247,7 +254,7 @@ def submit():
         conn.close()
         return redirect("/")
     except:
-        return error("Unable to upload: Check inputs", 402)
+        return error("Unable to upload: Check inputs", 400)
 
 
 # Handles displaying lost items
@@ -259,31 +266,56 @@ def lost():
         keyword = request.form["keyword"]
 
         conn = sqlite3.connect(DATABASE)
+        conn.row_factory = sqlite3.Row
         c = conn.cursor()
 
         try:
             c.execute(
                 """
-                      SELECT * FROM items 
-                      WHERE status = 'lost' AND approved = true 
-                      AND (title LIKE ? OR description LIKE ?)
+                      SELECT 
+                      items.id AS id, 
+                      items.title AS title, 
+                      items.description AS description, 
+                      items.image_path AS image_path, 
+                      datetime(items.date_reported, 'localtime') AS date_reported,
+                      requests.user_id AS user_id 
+                      FROM items 
+                      LEFT JOIN requests
+                      ON items.id = requests.item_id
+                      WHERE items.status = 'lost' AND items.approved = true
+                      AND (items.title LIKE ? OR items.description LIKE ?)
                       """,
                 (f"%{keyword}%", f"%{keyword}%"),
             )
             items_list = c.fetchall()
             conn.close()
         except:
-            return error("Failed to fetch items", 402)
+            return error("Failed to fetch items", 500)
     else:
         conn = sqlite3.connect(DATABASE)
+        conn.row_factory = sqlite3.Row
         c = conn.cursor()
 
         try:
-            c.execute("SELECT * FROM items WHERE status = 'lost' AND approved = true")
+            c.execute(
+                """
+                      SELECT 
+                      items.id AS id, 
+                      items.title AS title, 
+                      items.description AS description, 
+                      items.image_path AS image_path, 
+                      datetime(items.date_reported, 'localtime') AS date_reported,
+                      requests.user_id AS user_id 
+                      FROM items 
+                      LEFT JOIN requests
+                      ON items.id = requests.item_id
+                      WHERE items.status = 'lost' AND items.approved = true
+                      """
+            )
             items_list = c.fetchall()
             conn.close()
         except:
-            return error("Failed to fetch items", 402)
+            return error("Failed to fetch items", 500)
 
     return render_template("lost.html", items=items_list)
 
@@ -297,87 +329,273 @@ def found():
         keyword = request.form["keyword"]
 
         conn = sqlite3.connect(DATABASE)
+        conn.row_factory = sqlite3.Row
         c = conn.cursor()
 
         try:
             c.execute(
                 """
-                      SELECT * FROM items 
-                      WHERE status = 'found' AND approved = true 
-                      AND (title LIKE ? OR description LIKE ?)
+                      SELECT 
+                      items.id AS id, 
+                      items.title AS title, 
+                      items.description AS description, 
+                      items.image_path AS image_path, 
+                      datetime(items.date_reported, 'localtime') AS date_reported,
+                      requests.user_id AS user_id 
+                      FROM items 
+                      LEFT JOIN requests
+                      ON items.id = requests.item_id
+                      WHERE items.status = 'found' AND items.approved = true
+                      AND (items.title LIKE ? OR items.description LIKE ?)
                       """,
                 (f"%{keyword}%", f"%{keyword}%"),
             )
             items_list = c.fetchall()
             conn.close()
         except:
-            return error("Failed to fetch items", 402)
+            return error("Failed to fetch items", 500)
     else:
+        conn = sqlite3.connect(DATABASE)
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+
+        try:
+            c.execute("""
+                      SELECT 
+                      items.id AS id, 
+                      items.title AS title, 
+                      items.description AS description, 
+                      items.image_path AS image_path, 
+                      datetime(items.date_reported, 'localtime') AS date_reported,
+                      requests.user_id AS user_id 
+                      FROM items 
+                      LEFT JOIN requests
+                      ON items.id = requests.item_id
+                      WHERE items.status = 'found' AND items.approved = true
+                      """)
+            items_list = c.fetchall()
+            conn.close()
+        except:
+            return error("Failed to fetch items", 500)
+
+    return render_template("found.html", items=items_list)
+
+
+# Allows user to file for information
+@app.route("/request/<int:id>", methods=["GET", "POST"])
+@login_required
+def request_item(id):
+    # Sends request
+    if request.method == "POST":
+        # Get user info from session
+        user_id = session.get("user_id")
+
+        # Get submission from form
+        message = request.form["message"]
+        image = request.files.get("image")
+
+        # Save image and get path
+        filepath = save_image(image)
+
+        # Upload to database
         conn = sqlite3.connect(DATABASE)
         c = conn.cursor()
 
         try:
             c.execute(
                 """
-                      SELECT * FROM items 
-                      WHERE status = 'found' 
-                      AND approved = true
-                      """
+                INSERT INTO requests (user_id, item_id, message, image_path) 
+                VALUES (?, ?, ?, ?)
+                """,
+                (user_id, id, message, filepath),
             )
-            items_list = c.fetchall()
+            conn.commit()
             conn.close()
+            return redirect("/")
         except:
-            return error("Failed to fetch items", 402)
+            return error("Unable to upload: Check inputs", 400)
+    # Request form
+    return render_template("request.html", item_id=id)
 
-    return render_template("found.html", items=items_list)
 
-
-# Handles management of posts for admin
-@app.route("/manage", methods=["GET", "POST"])
+# Lists requests for user
+@app.route("/requests", methods=["GET", "POST"])
 @login_required
-@admin_required
-def manage():
+def requests():
     # Search up specific posts
     if request.method == "POST":
         # Get keyword for querying
         keyword = request.form["keyword"]
 
         conn = sqlite3.connect(DATABASE)
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+
+        try:
+            # Get all approved requests with contact info
+            c.execute(
+                """
+                      SELECT 
+                      items.title AS title,
+                      items.status AS item_status,
+                      requests.message AS messgage,
+                      datetime(requests.date_requested, 'localtime') AS date_requested,
+                      requests.image_path AS image_path,
+                      requests.status AS request_status
+                      items.email AS email,
+                      items.name AS name
+                      FROM requests
+                      INNER JOIN items ON requests.item_id = items.id
+                      WHERE requests.status = 'approved'
+                      AND (requests.message LIKE ? OR 
+                      items.title LIKE ? OR items.description LIKE ?)
+                      """,
+                      (f"%{keyword}%", f"%{keyword}%", f"%{keyword}%"),
+            )
+            requests_list = c.fetchall()
+
+            # Get all non-approved requests with contact info
+            c.execute(
+                """
+                      SELECT 
+                      items.title AS title,
+                      items.status AS item_status,
+                      requests.message AS messgage,
+                      datetime(requests.date_requested, 'localtime') AS date_requested,
+                      requests.image_path AS image_path,
+                      requests.status AS request_status
+                      FROM requests
+                      INNER JOIN items ON requests.item_id = items.id
+                      WHERE NOT requests.status = 'approved'
+                      AND (requests.message LIKE ? OR 
+                      items.title LIKE ? OR items.description LIKE ?)
+                      """,
+                      (f"%{keyword}%", f"%{keyword}%", f"%{keyword}%"),
+            )
+            requests_list.extend(c.fetchall())
+
+            conn.close()
+        except:
+            return error("Failed to fetch requests", 500)
+    else:
+        conn = sqlite3.connect(DATABASE)
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+
+        try:
+            # Get all approved requests with contact info
+            c.execute(
+                """
+                      SELECT 
+                      items.title AS title,
+                      items.status AS item_status,
+                      requests.message AS messgage,
+                      datetime(requests.date_requested, 'localtime') AS date_requested,
+                      requests.image_path AS image_path,
+                      requests.status AS request_status,
+                      items.email AS email,
+                      items.name AS name
+                      FROM requests
+                      INNER JOIN items ON requests.item_id = items.id
+                      WHERE requests.status = 'approved'
+                      """
+            )
+            requests_list = c.fetchall()
+
+            # Get all non-approved requests with contact info
+            c.execute(
+                """
+                      SELECT 
+                      items.title AS title,
+                      items.status AS item_status,
+                      requests.message AS messgage,
+                      datetime(requests.date_requested, 'localtime') AS date_requested,
+                      requests.image_path AS image_path,
+                      requests.status AS request_status
+                      FROM requests
+                      INNER JOIN items ON requests.item_id = items.id
+                      WHERE requests.status != 'approved'
+                      """
+            )
+            requests_list.extend(c.fetchall())
+
+            conn.close()
+        except:
+            return error("Failed to fetch requests", 500)
+
+    return render_template("requests.html", requests=requests_list)
+
+
+# Handles management of posts for admin
+@app.route("/manage_items", methods=["GET", "POST"])
+@login_required
+@admin_required
+def manage_items():
+    # Allow searching
+    if request.method == "POST":
+        # Get keyword for querying
+        keyword = request.form["keyword"]
+
+        conn = sqlite3.connect(DATABASE)
+        conn.row_factory = sqlite3.Row
         c = conn.cursor()
 
         try:
             c.execute(
                 """
-                      SELECT * FROM items 
-                      WHERE title LIKE ? OR description LIKE ?
+                      SELECT *, 
+                      datetime(date_reported, 'localtime') AS localdate
+                      FROM items WHERE title LIKE ? OR description LIKE ?
                       """,
                 (f"%{keyword}%", f"%{keyword}%"),
             )
             items_list = c.fetchall()
             conn.close()
         except:
-            return error("Failed to fetch items", 402)
+            return error("Failed to fetch items", 500)
     else:
         conn = sqlite3.connect(DATABASE)
+        conn.row_factory = sqlite3.Row
         c = conn.cursor()
 
         try:
-            c.execute("SELECT * FROM items")
+            c.execute(
+                """
+                      SELECT *, 
+                      datetime(date_reported, 'localtime') AS localdate
+                      FROM items
+                      """
+                      )
             items_list = c.fetchall()
             conn.close()
         except:
-            return error("Failed to fetch items", 402)
+            return error("Failed to fetch items", 500)
 
-    return render_template("manage.html", items=items_list)
+    return render_template("manage_item.html", items=items_list)
 
+# Approve submission
+@app.route("/approve_item/<int:id>", methods=["POST"])
+@login_required
+@admin_required
+def approve_item(id):
+    try:
+        conn = sqlite3.connect(DATABASE)
+        c = conn.cursor()
+        c.execute("UPDATE items SET approved = true WHERE id = ?", (id,))
+        conn.commit()
+        conn.close()
+    except:
+        return error("Failed to update", 500)
+    return redirect("/")
 
 # Delete submission
-@app.route("/delete/<int:id>", methods=["POST"])
+@app.route("/delete_item/<int:id>", methods=["POST"])
 @login_required
 @admin_required
 def delete_item(id):
     try:
         conn = sqlite3.connect(DATABASE)
+        conn.row_factory = sqlite3.Row
         c = conn.cursor()
 
         # Delete image if it exists
@@ -392,25 +610,118 @@ def delete_item(id):
         conn.commit()
         conn.close()
     except:
-        return error("Failed to delete", 402)
+        return error("Failed to delete", 500)
     return redirect("/")
 
 
-# Approve submission
-@app.route("/approve/<int:id>", methods=["POST"])
+# Handles management of requests for admin
+@app.route("/manage_requests", methods=["GET", "POST"])
 @login_required
 @admin_required
-def approve_item(id):
+def manage_requests():
+    # Allow searching
+    if request.method == "POST":
+        # Get keyword for querying
+        keyword = request.form["keyword"]
+
+        conn = sqlite3.connect(DATABASE)
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+
+        try:
+            c.execute(
+                """
+                    SELECT 
+                    requests.id as id,
+                    items.title AS title,
+                    items.status AS item_status,
+                    items.email AS poster_email,
+                    items.name AS poster_name,
+                    users.email AS user_email,
+                    COALESCE(users.preferred_name, 
+                    CONCAT(users.first_name, ' ', users.last_name)) 
+                    AS user_name,
+                    requests.message AS message,
+                    datetime(requests.date_requested, 'localtime') AS date_requested,
+                    requests.image_path AS image_path,
+                    requests.status AS request_status
+                    FROM requests
+                    INNER JOIN items ON requests.item_id = items.id
+                    INNER JOIN users ON requests.user_id = users.id
+                    WHERE requests.message LIKE ? OR 
+                    items.title LIKE ? OR items.description LIKE ?
+                    """,
+                (f"%{keyword}%", f"%{keyword}%", f"%{keyword}%"),
+            )
+            request_list = c.fetchall()
+            conn.close()
+        except:
+            return error("Failed to fetch requests", 500)
+    else:
+        conn = sqlite3.connect(DATABASE)
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+
+        try:
+            c.execute(
+                """
+                    SELECT 
+                    requests.id as id,
+                    items.title AS title,
+                    items.status AS item_status,
+                    items.email AS poster_email,
+                    items.name AS poster_name,
+                    users.email AS user_email,
+                    COALESCE(users.preferred_name, 
+                    CONCAT(users.first_name, ' ', users.last_name)) 
+                    AS user_name,
+                    requests.message AS message,
+                    datetime(requests.date_requested, 'localtime') AS date_requested,
+                    requests.image_path AS image_path,
+                    requests.status AS request_status
+                    FROM requests
+                    INNER JOIN items ON requests.item_id = items.id
+                    INNER JOIN users ON requests.user_id = users.id
+                    """
+            )
+            request_list = c.fetchall()
+            conn.close()
+        except:
+            return error("Failed to fetch requests", 500)
+
+    return render_template("manage_request.html", requests=request_list)
+
+
+# Approve request
+@app.route("/approve_request/<int:id>", methods=["POST"])
+@login_required
+@admin_required
+def approve_request(id):
     try:
         conn = sqlite3.connect(DATABASE)
         c = conn.cursor()
-        c.execute("UPDATE items SET approved = true WHERE id = ?", (id,))
+        c.execute("UPDATE requests SET status = 'approved' WHERE id = ?", (id,))
         conn.commit()
         conn.close()
     except:
-        return error("Failed to update", 402)
+        return error("Failed to update", 500)
     return redirect("/")
 
+# Reject request
+@app.route("/reject_request/<int:id>", methods=["POST"])
+@login_required
+@admin_required
+def reject_request(id):
+    try:
+        conn = sqlite3.connect(DATABASE)
+        c = conn.cursor()
+        c.execute("UPDATE requests SET status = 'rejected' WHERE id = ?", (id,))
+        conn.commit()
+        conn.close()
+        conn.close()
+    except:
+        return error("Failed to update", 500)
+    return redirect("/")
 
 """Debugging"""
 

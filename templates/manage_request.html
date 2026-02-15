@@ -1,0 +1,37 @@
+{% extends "list_layout.html" %}
+
+{% block title %}
+    Manage requests
+{% endblock %}
+
+{% block card %}
+    {% for request in requests %}
+        <div class="card">
+            <div class="card content">
+                <h5>Approval Status: {{ request["request_status"] }}</h5>
+                <h5>Item Status: {{ request["item_status"] }}</h5>
+                <h5>Request Time: {{ request["date_requested"] }}</h5>
+                <h5>Poster Email: {{ request["poster_email"] }}</h5>
+                <h5>Poster Name: {{ request["poster_name"] }}</h5>
+                <h5>Requester Email: {{ request["user_email"] }}</h5>
+                <h5>Requester Name: {{ request["user_name"] }}</h5>
+                <h4>Title of item post: {{ request["title"] }}</h4>
+                <p>Requester Message: {{ request["message"] }}<p>
+            </div>
+            {% if request["image_path"] %}
+                Image Evidence
+                <img src="{{ request['image_path'] }}" alt="{{ request['title'] }}" width="200px">
+            {% endif %}
+            {% if request["request_status"] == "pending" %}
+                <div class="card button">
+                    <form method="post" action="{{ url_for('approve_request', id=request['id']) }}">
+                        <button type="submit">Approve</button>
+                    </form>
+                    <form method="post" action="{{ url_for('reject_request', id=request['id']) }}">
+                        <button type="submit">Reject</button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+    {% endfor %}
+{% endblock %}

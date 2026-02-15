@@ -15,13 +15,15 @@
 
         {% block nav %}
             {% if session.get("user") and session.get("status") == "admin" %}
-                <a href="/manage">Manage</a>
+                <a href="/manage_requests">Manage Requests</a>
+                <a href="/manage_items">Manage Items</a>
             {% endif %}
 
             <a href="/lost">Lost Items</a>
             <a href="/found">Found Items</a>
 
             {% if session.get("user") %}
+                <a href="/requests">Requests</a>
                 <a href="/logout">Log Out</a>
             {% else %}
                 <a href="/login">Log In</a>
