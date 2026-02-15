@@ -1,19 +1,29 @@
 body {
     display: flex;
     flex-direction: column;
-    font-family: 'Courier New', Courier, monospace;
+    font-family: system-ui, Segoe UI, Roboto, Arial, sans-serif; 
+    background-color: blue;
+    background: linear-gradient(140deg,rgba(0, 107, 184, 1) 0%, rgba(85, 194, 163, 1) 49%, rgba(255, 232, 117, 1) 100%);
 }
 
-h4 {
-    margin: 4px;
+h1, h2, h3, h4, h5 {
+    color: #434343;
+    margin: 1%;
+    text-align: center;
 }
 
-h5 {
-    margin: 4px;
+hr {
+    margin: 5%;
+}
+
+label { 
+    color: #006666; 
+    font-size: 12px; 
+    margin-top: 5px; 
 }
 
 p {
-    margin: 4px;
+    margin: 1%;
 }
 
 .cards {
@@ -38,4 +48,33 @@ p {
     border: 0px;
     display: flex;
     gap: 10px
+}
+
+.radioButtons {
+    display: flex;
+    margin-top: 12px;
+}
+
+.reportCard {
+    max-width: 550px; 
+    margin: auto; 
+    margin-top: 10%;
+    padding: 30px; 
+    padding-top: 4px;
+    background: white; 
+    border: 1px solid #ddd; 
+    border-radius: 5px; 
+    display: flex;
+    flex-direction: column;
+}
+
+.reportForm {
+    display: flex;
+    flex-direction: column;
+    flex: auto;
+}
+
+#submit {
+    color: white;
+    background-color: green;
 }
