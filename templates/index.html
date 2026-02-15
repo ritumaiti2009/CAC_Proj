@@ -6,7 +6,7 @@
 
 {% block main %}
     <div class = "reportCard">
-        <h1>Welcome {{ user }}!</h1>
+        <h1>Welcome {{ session.get("name") }}!</h1>
         <h2>Report your item</h2>
         <form class="reportForm" method="post" action="/submit" enctype="multipart/form-data">
             <div class="radioButtons">
