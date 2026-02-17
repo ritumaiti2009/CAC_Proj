@@ -17,7 +17,7 @@ app.secret_key = "fbla_lost_and_found".encode(
 DATABASE = "database.db"
 
 # Handles image collection
-UPLOAD_PATH = "static/uploads"
+UPLOAD_PATH = "uploads"
 app.config["UPLOAD_PATH"] = UPLOAD_PATH
 os.makedirs(UPLOAD_PATH, exist_ok=True)
 
@@ -80,7 +80,7 @@ def init_db():
               last_name TEXT NOT NULL,
               preferred_name TEXT DEFAULT NULL,
               phone_num TEXT DEFAULT NULL,
-              status TEXT NOT NULL DEFAULT 'student'
+              role TEXT NOT NULL DEFAULT 'student'
         )
     """
     )
