@@ -80,7 +80,7 @@ def init_db():
               last_name TEXT NOT NULL,
               preferred_name TEXT DEFAULT NULL,
               phone_num TEXT DEFAULT NULL,
-              status TEXT NOT NULL DEFAULT 'student'
+              role TEXT NOT NULL DEFAULT 'student'
         )
     """
     )
