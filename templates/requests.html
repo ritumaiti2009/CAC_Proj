@@ -11,10 +11,11 @@
             <h5>Time: {{ request["date_requested"] }}</h5>
             <h4>Title: {{ request["title"] }}</h4>
             <h5>Item Status: {{ request["item_status"] }}</h5>
+            <p>Message: {{ request["message"] }}</p>
             {% if request["email"] and request["name"] %}
                 <h4>
                     Contact Info:
-                    {{ request["email"] }}
+                    {{ request["email"] }},
                     {{ request["name"] }}
                 </h4>
             {% endif %}
