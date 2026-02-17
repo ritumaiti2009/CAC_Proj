@@ -17,7 +17,7 @@ app.secret_key = "fbla_lost_and_found".encode(
 DATABASE = "database.db"
 
 # Handles image collection
-UPLOAD_PATH = "static/uploads"
+UPLOAD_PATH = "uploads"
 app.config["UPLOAD_PATH"] = UPLOAD_PATH
 os.makedirs(UPLOAD_PATH, exist_ok=True)
 
