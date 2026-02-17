@@ -440,7 +440,7 @@ def requests():
                       SELECT 
                       items.title AS title,
                       items.status AS item_status,
-                      requests.message AS messgage,
+                      requests.message AS message,
                       datetime(requests.date_requested, 'localtime') AS date_requested,
                       requests.image_path AS image_path,
                       requests.status AS request_status
@@ -448,11 +448,11 @@ def requests():
                       items.name AS name
                       FROM requests
                       INNER JOIN items ON requests.item_id = items.id
-                      WHERE requests.status = 'approved'
+                      WHERE requests.status = 'approved' AND requests.user_id = ?
                       AND (requests.message LIKE ? OR 
                       items.title LIKE ? OR items.description LIKE ?)
                       """,
-                      (f"%{keyword}%", f"%{keyword}%", f"%{keyword}%"),
+                      (session.get("user_id"), f"%{keyword}%", f"%{keyword}%", f"%{keyword}%")
             )
             requests_list = c.fetchall()
 
@@ -462,17 +462,17 @@ def requests():
                       SELECT 
                       items.title AS title,
                       items.status AS item_status,
-                      requests.message AS messgage,
+                      requests.message AS message,
                       datetime(requests.date_requested, 'localtime') AS date_requested,
                       requests.image_path AS image_path,
                       requests.status AS request_status
                       FROM requests
                       INNER JOIN items ON requests.item_id = items.id
-                      WHERE NOT requests.status = 'approved'
+                      WHERE NOT requests.status = 'approved' AND requests.user_id = ?
                       AND (requests.message LIKE ? OR 
                       items.title LIKE ? OR items.description LIKE ?)
                       """,
-                      (f"%{keyword}%", f"%{keyword}%", f"%{keyword}%"),
+                      (session.get("user_id"), f"%{keyword}%", f"%{keyword}%", f"%{keyword}%")
             )
             requests_list.extend(c.fetchall())
 
@@ -491,7 +491,7 @@ def requests():
                       SELECT 
                       items.title AS title,
                       items.status AS item_status,
-                      requests.message AS messgage,
+                      requests.message AS message,
                       datetime(requests.date_requested, 'localtime') AS date_requested,
                       requests.image_path AS image_path,
                       requests.status AS request_status,
@@ -499,8 +499,9 @@ def requests():
                       items.name AS name
                       FROM requests
                       INNER JOIN items ON requests.item_id = items.id
-                      WHERE requests.status = 'approved'
-                      """
+                      WHERE requests.status = 'approved' AND requests.user_id = ?
+                      """,
+                      (session.get("user_id"),)
             )
             requests_list = c.fetchall()
 
@@ -510,14 +511,15 @@ def requests():
                       SELECT 
                       items.title AS title,
                       items.status AS item_status,
-                      requests.message AS messgage,
+                      requests.message AS message,
                       datetime(requests.date_requested, 'localtime') AS date_requested,
                       requests.image_path AS image_path,
                       requests.status AS request_status
                       FROM requests
                       INNER JOIN items ON requests.item_id = items.id
-                      WHERE requests.status != 'approved'
-                      """
+                      WHERE requests.status != 'approved' AND requests.user_id = ?
+                      """,
+                      (session.get("user_id"),)
             )
             requests_list.extend(c.fetchall())
 
