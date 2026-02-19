@@ -1,4 +1,4 @@
-.uploads/
 .venv/
 .vscode/
 database.db
+uploads/
