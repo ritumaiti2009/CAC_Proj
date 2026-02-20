@@ -17,6 +17,8 @@
                 <form method="GET" action="{{ url_for('request_item', id=item['id']) }}">
                     <button type="submit">Request Info</button>
                 </form>
+            {% else %}
+                <button type="submit">Request Info</button>
             {% endif %}
         </div>
     {% endfor %}
