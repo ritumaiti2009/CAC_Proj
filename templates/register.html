@@ -7,17 +7,33 @@
 {% block nav %}{% endblock %}
 
 {% block main %}
-    <h2>Register<h2>
-    <form method="post">
-        Required<br>
-        First Name: <input type="text" name="first_name" required><br><br>
-        Last Name: <input type="text" name="last_name" required><br><br>
-        Email: <input type="email" name="email" required><br><br>
-        Password: <input type="password" name="password" required><br><br>
-        Optional<br>
-        Preferred Name: <input type="text" name="preferred_name"><br><br>
-        Phone Number: <input type="tel" name="phone_num"><br><br><br>
-        <button type="submit">Register</button>
-    </form>
-    <a href="/login">Login</a>
+    <div class="card mx-auto" style="width: 500px; margin: 64px;">
+        <div class="card-body">
+            <div class="card-header">Register</div>
+            <form method="post">
+                <h5>Required</h5>
+                <hr>
+                <label for="firstNameInput" class="form-label">First Name: </label>
+                <input type="text" class="form-control" id="firstNameInput" name="first_name" placeholder="John" required>
+                <label for="lastNameInput" class="form-label">Last Name: </label>
+                <input type="text" class="form-control" id="lastNameInput" name="last_name" placeholder="Doe" required>
+                <label for="emailInput" class="form-label">Email: </label>
+                <input type="email" class="form-control" id="emailInput" name="email" placeholder="name@example.com" required>
+                <label for="passwordInput" class="form-label">Password: </label>
+                <input type="password" id="passwordInput" class="form-control" name="password" minlength="8" maxlength="20" required>
+                <hr>
+                <h5>Optional</h5>
+                <hr>
+                <label for="preferredNameInput" class="form-label">Preferred Name: </label>
+                <input type="text" class="form-control" id="preferredNameInput" name="preferred_name" placeholder="Nickname">
+                <label for="telInput" class="form-label">Phone Number: </label>
+                <input type="tel" class="form-control" id="telInput" name="phone_num" pattern="^\+?[1-9]\d{9,14}$" aria-describedby="phoneInfo" placeholder="+11234567890">
+                <p class="form-text" id="phoneInfo">Uses E.164 format</p>
+                <hr>
+                <button class="btn btn-outline-primary" id="submit" type="submit">Submit</button>
+            </form>
+            <br>
+            <a class="btn btn-outline-secondary btn-sm" href="/login">Login</a>
+        </div>
+    </div>
 {% endblock %}
