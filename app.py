@@ -165,6 +165,7 @@ def lost():
                 f"""
                     {query}
                       AND (items.title LIKE ? OR items.description LIKE ?)
+                      ORDER BY items.date_reported DESC
                       """,
                 (f"%{keyword}%", f"%{keyword}%"),
             )
@@ -172,7 +173,7 @@ def lost():
             return error("Failed to fetch items", 500)
     else:
         try:
-            items_list = run_sql(query)
+            items_list = run_sql(f"{query} ORDER BY items.date_reported DESC")
         except:
             return error("Failed to fetch items", 500)
 
@@ -207,6 +208,7 @@ def found():
                 f"""
                       {query}
                       AND (items.title LIKE ? OR items.description LIKE ?)
+                      ORDER BY items.date_reported DESC
                       """,
                 (f"%{keyword}%", f"%{keyword}%"),
             )
@@ -214,7 +216,7 @@ def found():
             return error("Failed to fetch items", 500)
     else:
         try:
-            items_list = run_sql(query)
+            items_list = run_sql(f"{query} ORDER BY items.date_reported DESC")
         except:
             return error("Failed to fetch items", 500)
 
@@ -289,6 +291,8 @@ def requests():
                 AND (requests.message LIKE ? OR 
                 items.title LIKE ? OR items.description LIKE ?)
                 """
+    
+    date_order_query = "ORDER BY requests.date_requested DESC"
 
     # Search up specific posts
     if request.method == "POST":
@@ -303,6 +307,7 @@ def requests():
                       {header_extra_query}
                       {tail_approved_query}
                       {tail_search_query}
+                      {date_order_query}
                       """,
                 (
                     session.get("user_id"),
@@ -319,6 +324,7 @@ def requests():
                         {header_query}
                         {tail_unapproved_query}
                         {tail_search_query}
+                        {date_order_query}
                         """,
                     (
                         session.get("user_id"),
@@ -338,6 +344,7 @@ def requests():
                       {header_query},
                       {header_extra_query}
                       {tail_approved_query}
+                      {date_order_query}
                       """,
                 (session.get("user_id"),),
             )
@@ -348,6 +355,7 @@ def requests():
                     f"""
                         {header_query}
                         {tail_unapproved_query}
+                        {date_order_query}
                         """,
                     (session.get("user_id"),),
                 )
@@ -380,6 +388,7 @@ def manage_items():
                 f"""
                       {query}
                       FROM items WHERE title LIKE ? OR description LIKE ?
+                      ORDER BY items.date_reported DESC
                       """,
                 (f"%{keyword}%", f"%{keyword}%"),
             )
@@ -387,7 +396,7 @@ def manage_items():
             return error("Failed to fetch items", 500)
     else:
         try:
-            items_list = run_sql(query)
+            items_list = run_sql(f"{query} ORDER BY items.date_reported DESC")
         except:
             return error("Failed to fetch items", 500)
 
@@ -460,6 +469,7 @@ def manage_requests():
                     {query}
                     WHERE requests.message LIKE ? OR 
                     items.title LIKE ? OR items.description LIKE ?
+                    ORDER BY requests.date_requested DESC
                     """,
                 (f"%{keyword}%", f"%{keyword}%", f"%{keyword}%"),
             )
@@ -467,7 +477,7 @@ def manage_requests():
             return error("Failed to fetch requests", 500)
     else:
         try:
-            request_list = run_sql(query)
+            request_list = run_sql(f"{query} ORDER BY requests.date_requested DESC")
         except:
             return error("Failed to fetch requests", 500)
 
