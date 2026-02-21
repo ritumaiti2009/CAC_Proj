@@ -71,14 +71,15 @@ def login():
             user = run_sql("SELECT * FROM users WHERE email = ?", (email,))
         except:
             return error("Unable to login: Failed to fetch login information", 401)
-        
+
         # Authenticate password
         if user and check_password_hash(user[0][2], password):
             session["user_id"] = user[0][0]
             session["user"] = email
-            session["name"] = f"{user[0][3]} {user[0][4]}"
             if user[0][5]:
-                session["name"] += f" ({user[0][5]})"
+                session["name"] = f"{user[0][5]} {user[0][4]}"
+            else:
+                session["name"] = f"{user[0][3]} {user[0][4]}"
             session["status"] = user[0][7]
             return redirect("/")
         else:
@@ -129,7 +130,7 @@ def submit():
             INSERT INTO items (user_id, email, name, title, description, image_path, status) 
             VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
-            (user_id, email, name, title, description, filepath, status)
+            (user_id, email, name, title, description, filepath, status),
         )
         return redirect("/")
     except:
@@ -307,7 +308,7 @@ def requests():
                     session.get("user_id"),
                     f"%{keyword}%",
                     f"%{keyword}%",
-                    f"%{keyword}%"
+                    f"%{keyword}%",
                 ),
             )
 
@@ -323,7 +324,7 @@ def requests():
                         session.get("user_id"),
                         f"%{keyword}%",
                         f"%{keyword}%",
-                        f"%{keyword}%"
+                        f"%{keyword}%",
                     ),
                 )
             )

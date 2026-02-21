@@ -4,10 +4,10 @@ from helpers import error
 from werkzeug.utils import secure_filename
 
 # Handles image directory
-UPLOAD_PATH = 'static/uploads'
+UPLOAD_PATH = "static/uploads"
 os.makedirs(UPLOAD_PATH, exist_ok=True)
 
-ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "heic", "heif"}
 
 
 # Check if file is accepted by checking if file type matches the accepted ones
@@ -39,6 +39,7 @@ def save_image(image):
             return filepath
         else:
             return error("Error uploading image: Invalid file type", 415)
+
 
 # Remove image from UPLOAD_PATH
 def del_image(image_path):

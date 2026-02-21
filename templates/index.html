@@ -5,38 +5,39 @@
 {% endblock %}
 
 {% block main %}
-    <div class = "reportCard">
-        <h1>Welcome {{ session.get("name") }}!</h1>
-        <h2>Report your item</h2>
-        <form class="reportForm" method="post" action="/submit" enctype="multipart/form-data">
-            <div class="radioButtons">
-                <label>
-                    <input type="radio" name="type" value="lost" checked>
-                    Lost
-                </label>  
-                <label>
-                    <input type="radio" name="type" value="found">
-                    Found
-                </label>
-            </div><br>
-            <hr>
+    <div class="card mx-auto d-flex align-items-center" style="width: 400px; margin: 64px;">
+            <div class="card-body">
+                {% if session.get("user") %}
+                    <h6 class="card-header">Welcome {{ session.get("name") }}!</h6>
+                {% endif %}
+                <div class="card-header">Report an item</div>
+                <form class="mb-3" method="post" action="/submit" enctype="multipart/form-data">
+                    <div class="btn-group" role="group" aria-label="Report Type">
+                        <input type="radio" class="btn-check" name="type" value="lost" id="lostRadio" autocomplete="off" checked>
+                        <label class="btn btn-outline-primary" for="lostRadio">Lost</label>
+                        <input type="radio" class="btn-check" name="type" value="found" id="foundRadio" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="foundRadio">Found</label>
+                    </div><br>
+                    <hr>
+                    <h5>Required</h5><br>
+                    <label for="titleInput" class="form-label">Title of Post: </label>
+                    <input type="text" class="form-control" id="titleInput" name="title" placeholder="Title" required>
+                    {% if not session.get("user") %}
+                        <label for="emailInput" class="form-label">Your Email: </label>
+                        <input type="email" class="form-control" id="emailInput" name="email" placeholder="name@example.com" required>
+                        <label for="emailInput" class="form-label">Your Name: </label>
+                        <input type="text" class="form-control" id="nameInput" name="name" placeholder="John Doe" required>
+                    {% endif %}
 
-            {% if session.get("user") %}
-                <h5>Required</h5><br>
-                <label>Name of Item: <input type="text" name="title" required></label>
-            {% else %}
-                <h5>Required</h5><br>
-                <label>Name of Item: <input type="text" name="title" required></label><br>
-                <label>Your Email: <input type="text" name="email" required></label><br>
-                <label>Your Name: <input type="text" name="name" required></label>
-            {% endif %}
-
-            <hr>
-            <h5>Optional</h5><br>
-            <label>Description: <input type="text" name="description"></label><br>
-            <label>Image: <input type="file" name="image" accept="image/*"></label><br>
-            <hr>
-            <button id="submit" type="submit">Submit</button>
-        </form>
+                    <hr>
+                    <h5>Optional</h5><br>
+                    <label for="descriptionInput" class="form-label">Description of Item: </label>
+                    <input type="text" class="form-control" id="descriptionInput" name="description" placeholder="Description">
+                    <label for="imageInput" class="form-label">Image: </label>
+                    <input type="file" accept="image/*" class="form-control" id="imageInput" name="image">
+                    <hr>
+                    <button class="btn btn-outline-primary" id="submit" type="submit">Submit</button>
+                </form>
+            </div>
     </div>
 {% endblock %}
