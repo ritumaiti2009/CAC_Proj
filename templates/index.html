@@ -12,6 +12,8 @@
                 {% endif %}
                 <div class="card-header">Report an item</div>
                 <form class="mb-3" method="post" action="/submit" enctype="multipart/form-data">
+                    <br>
+                    <label>Item Type: </label><br>
                     <div class="btn-group" role="group" aria-label="Report Type">
                         <input type="radio" class="btn-check" name="type" value="lost" id="lostRadio" autocomplete="off" checked>
                         <label class="btn btn-outline-primary" for="lostRadio">Lost</label>
