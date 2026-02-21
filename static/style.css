@@ -1,3 +1,7 @@
+.card {
+    width: 300px;
+}
+
 body {
     display: flex;
     flex-direction: column;
@@ -6,4 +10,8 @@ body {
 
 h1, h2, h3, h5, h6, p, a, div, button, input {
     font-family: "Vend Sans", sans-serif;
+}
+
+span {
+    display: inline-block;
 }

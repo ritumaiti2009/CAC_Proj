@@ -1,3 +1,4 @@
+.prettierrc.json
 .venv/
 .vscode/
 database.db

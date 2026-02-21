@@ -177,7 +177,7 @@ def lost():
         except:
             return error("Failed to fetch items", 500)
 
-    return render_template("lost.html", items=items_list)
+    return render_template("items.html", item_type="Lost Items", items=items_list)
 
 
 # Handles displaying found items
@@ -220,7 +220,7 @@ def found():
         except:
             return error("Failed to fetch items", 500)
 
-    return render_template("found.html", items=items_list)
+    return render_template("items.html", item_type="Found Items", items=items_list)
 
 
 # Allows user to file for information
@@ -374,7 +374,7 @@ def manage_items():
     # Default query
     query = """
                 SELECT *, 
-                datetime(date_reported, 'localtime') AS localdate
+                datetime(date_reported, 'localtime') AS date_reported
                 FROM items
                 """
 
@@ -412,7 +412,7 @@ def approve_item(id):
         run_sql("UPDATE items SET approved = true WHERE id = ?", (id,))
     except:
         return error("Failed to update", 500)
-    return redirect("/")
+    return redirect("/manage_items")
 
 
 # Delete submission
@@ -423,14 +423,14 @@ def delete_item(id):
     try:
         # Delete image if it exists
         row = run_sql("SELECT image_path FROM items WHERE id = ?", (id,))
-        if row:
+        if row[0][0]:
             del_image(row[0][0])
 
         # Delete entry
         run_sql("DELETE FROM items WHERE id = ?", (id,))
     except:
         return error("Failed to delete", 500)
-    return redirect("/")
+    return redirect("/manage_items")
 
 
 # Handles management of requests for admin
@@ -493,7 +493,7 @@ def approve_request(id):
         run_sql("UPDATE requests SET status = 'approved' WHERE id = ?", (id,))
     except:
         return error("Failed to update", 500)
-    return redirect("/")
+    return redirect("/manage_requests")
 
 
 # Reject request
@@ -505,7 +505,7 @@ def reject_request(id):
         run_sql("UPDATE requests SET status = 'rejected' WHERE id = ?", (id,))
     except:
         return error("Failed to update", 500)
-    return redirect("/")
+    return redirect("/manage_requests")
 
 
 """Debugging"""

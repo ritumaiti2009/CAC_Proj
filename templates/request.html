@@ -1,13 +1,15 @@
 {% extends "layout.html" %}
-
-{% block title %}
-    Request Info
-{% endblock %}
-
+{% block title %}Request Info{% endblock %}
 {% block main %}
     <form method="post" action="{{ url_for('request_item', id=item_id) }}">
-        Message: <input type="text" name="message" required><br><br>
-        Image Evidence (Optional): <input type="file" name="image" accept="image/*"><br><br>
+        Message:
+        <input type="text" name="message" required>
+        <br>
+        <br>
+        Image Evidence (Optional):
+        <input type="file" name="image" accept="image/*">
+        <br>
+        <br>
         <button type="submit">Submit</button>
     </form>
 {% endblock %}

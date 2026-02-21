@@ -1,9 +1,5 @@
 {% extends "list_layout.html" %}
-
-{% block title %}
-    Manage requests
-{% endblock %}
-
+{% block title %}Manage requests{% endblock %}
 {% block card %}
     {% for request in requests %}
         <div class="card">
@@ -16,22 +12,28 @@
                 <h5>Requester Email: {{ request["user_email"] }}</h5>
                 <h5>Requester Name: {{ request["user_name"] }}</h5>
                 <h4>Title of item post: {{ request["title"] }}</h4>
-                <p>Requester Message: {{ request["message"] }}<p>
-            </div>
-            {% if request["image_path"] %}
-                Image Evidence
-                <img src="{{ request['image_path'] }}" alt="{{ request['title'] }}" width="200px">
-            {% endif %}
-            {% if request["request_status"] == "pending" %}
-                <div class="card button">
-                    <form method="post" action="{{ url_for('approve_request', id=request['id']) }}">
-                        <button type="submit">Approve</button>
-                    </form>
-                    <form method="post" action="{{ url_for('reject_request', id=request['id']) }}">
-                        <button type="submit">Reject</button>
-                    </form>
+                <p>
+                    Requester Message: {{ request["message"] }}
+                    <p>
+                    </div>
+                    {% if request["image_path"] %}
+                        Image Evidence
+                        <img src="{{ request['image_path'] }}"
+                             alt="{{ request['title'] }}"
+                             width="200px">
+                    {% endif %}
+                    {% if request["request_status"] == "pending" %}
+                        <div class="card button">
+                            <form method="post"
+                                  action="{{ url_for('approve_request', id=request['id']) }}">
+                                <button type="submit">Approve</button>
+                            </form>
+                            <form method="post"
+                                  action="{{ url_for('reject_request', id=request['id']) }}">
+                                <button type="submit">Reject</button>
+                            </form>
+                        </div>
+                    {% endif %}
                 </div>
-            {% endif %}
-        </div>
-    {% endfor %}
-{% endblock %}
+            {% endfor %}
+        {% endblock %}
