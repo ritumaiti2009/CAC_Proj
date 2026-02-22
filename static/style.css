@@ -2,6 +2,15 @@
     width: 300px;
 }
 
+.card-form {
+    width: 400px;
+    margin: 64px;
+}
+
+.navbar {
+    background-color: rgb(123, 157, 242);
+}
+
 body {
     display: flex;
     flex-direction: column;
@@ -14,4 +23,10 @@ h1, h2, h3, h5, h6, p, a, div, button, input {
 
 span {
     display: inline-block;
+}
+
+@media (min-width: 768px) {
+    .card {
+        width: 400px;
+    }
 }

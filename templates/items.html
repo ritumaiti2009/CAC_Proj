@@ -5,6 +5,15 @@
         <div class="card m-2">
             <div class="card-body">
                 <ul class="list-group list-group-flush">
+                    {% if item["image_path"] %}
+                        <li class="list-group-item">
+                            <img class="card-img-top"
+                                 src="{{ item['image_path'] }}"
+                                 alt="{{ item['title'] }}"
+                                 width="auto"
+                                 height="auto">
+                        </li>
+                    {% endif %}
                     <li class="list-group-item">
                         <h5 class="card-subtitle mb-2 text-body-secondary">{{ item["date_reported"] }}</h5>
                     </li>
@@ -16,38 +25,31 @@
                             <h5 class="card-text">{{ item["description"] }}</h5>
                         </li>
                     {% endif %}
-                    {% if item["image_path"] %}
-                        <li class="list-group-item">
-                            <img class="card-img-bottom"
-                                 src="{{ item['image_path'] }}"
-                                 alt="{{ item['title'] }}"
-                                 width="200px"
-                                 height="auto">
-                        </li>
-                    {% endif %}
-                    {% if session.get("user_id") != item["user_id"] %}
-                        <li class="list-group-item">
+                    <li class="list-group-item">
+                        {% if not session.get("user_id") %}
+                            <span data-bs-toggle="tooltip"
+                                  data-bs-placement="bottom"
+                                  title="Must login to send requests">
+                                <button class="btn btn-outline-secondary" type="button" disabled>Request Info</button>
+                            </span>
+                        {% elif session.get("user_id") == item["poster_user_id"] %}
+                            <span data-bs-toggle="tooltip"
+                                  data-bs-placement="bottom"
+                                  title="Can't request from yourself">
+                                <button class="btn btn-outline-secondary" type="button" disabled>Request Info</button>
+                            </span>
+                        {% elif session.get("user") == item["requester_user_id"] %}
+                            <span data-bs-toggle="tooltip"
+                                  data-bs-placement="bottom"
+                                  title="Only 1 request can be sent for this item">
+                                <button class="btn btn-outline-secondary" type="button" disabled>Request Info</button>
+                            </span>
+                        {% else %}
                             <form method="get" action="{{ url_for('request_item', id=item['id']) }}">
                                 <button class="btn btn-outline-primary" type="submit">Request Info</button>
                             </form>
-                        </li>
-                    {% elif session.get("user") %}
-                        <li class="list-group-item">
-                            <span data-bs-toggle="tooltip" data-bs-placement="bottom" title="Only 1 request can be sent for this item">
-                                <button class="btn btn-outline-secondary" type="button" disabled> 
-                                    Request Info
-                                </button>
-                            </span>
-                        </li>
-                    {% else %}
-                        <li class="list-group-item">
-                            <span data-bs-toggle="tooltip" data-bs-placement="bottom" title="Must login to send requests">
-                                <button class="btn btn-outline-secondary" type="button" disabled> 
-                                    Request Info
-                                </button>
-                            </span>
-                        </li>
-                    {% endif %}
+                        {% endif %}
+                    </li>
                 </ul>
             </div>
         </div>

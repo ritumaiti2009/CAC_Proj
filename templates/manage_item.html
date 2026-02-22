@@ -6,12 +6,11 @@
             <div class="card-body">
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">
-                        <h5 class="card-header
-                        {% if item['approved'] == 0 %} bg-secondary {% else %} bg-success {% endif %}">
+                        <h5 class="card-header {% if item['approved'] == 0 %} bg-secondary {% else %} bg-success {% endif %}">
                             {% if item["approved"] == 0 %}
-                                <em>Pending</em>
+                                <em>pending</em>
                             {% else %}
-                                Approved
+                                approved
                             {% endif %}
                         </h5>
                     </li>
@@ -40,36 +39,47 @@
                             <img class="card-img-bottom"
                                  src="{{ item['image_path'] }}"
                                  alt="{{ item['title'] }}"
-                                 width="200px"
+                                 width="auto"
                                  height="auto">
                         </li>
                     {% endif %}
                     <li class="list-group-item d-flex gap-2">
                         {% if item["approved"] == 0 %}
                             <form method="post" action="{{ url_for('approve_item', id=item['id']) }}">
-                                    <span data-bs-toggle="tooltip" data-bs-placement="bottom" title="Approve to public">
-                                        <button class="btn btn-outline-success" type="submit"> 
-                                            Approve
-                                        </button>
-                                    </span>
+                                <span data-bs-toggle="tooltip"
+                                      data-bs-placement="bottom"
+                                      title="Approve to public">
+                                    <button class="btn btn-outline-success" type="submit">Approve</button>
+                                </span>
                             </form>
                         {% endif %}
                         <form method="post" action="{{ url_for('delete_item', id=item['id']) }}">
-                            <span data-bs-toggle="tooltip" data-bs-placement="bottom" title="Delete permanently">
-                                <button class="btn btn-outline-danger" type="button" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal{{ item['id']}}" id="deleteBtn"> 
-                                    Delete
-                                </button>
+                            <span data-bs-toggle="tooltip"
+                                  data-bs-placement="bottom"
+                                  title="Delete permanently">
+                                <button class="btn btn-outline-danger"
+                                        type="button"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#confirmDeleteModal{{ item['id'] }}"
+                                        id="deleteBtn">Delete</button>
                             </span>
-                            <div class="modal fade" id="confirmDeleteModal{{ item['id']}}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="confirmDeleteModal{{ item['id']}}" aria-hidden="true">
+                            <div class="modal fade"
+                                 id="confirmDeleteModal{{ item['id'] }}"
+                                 data-bs-backdrop="static"
+                                 data-bs-keyboard="false"
+                                 tabindex="-1"
+                                 aria-labelledby="confirmDeleteModal{{ item['id'] }}"
+                                 aria-hidden="true">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
                                         <div class="modal-header">
                                             <h1 class="modal-title fs-5">Confirm Delete</h1>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            <button type="button"
+                                                    class="btn-close"
+                                                    data-bs-dismiss="modal"
+                                                    aria-label="Close"></button>
                                         </div>
-                                        <div class="modal-body">
-                                            Are you sure you want to delete this item? (This is permanent)
-                                        </div>
+                                        <div class="modal-body">Are you sure you want to delete this item? (This is permanent)</div>
                                         <div class="modal-footer">
                                             <button type="submit" class="btn btn-danger">Confirm Delete</button>
                                         </div>

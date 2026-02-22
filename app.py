@@ -148,7 +148,8 @@ def lost():
             items.description AS description, 
             items.image_path AS image_path, 
             datetime(items.date_reported, 'localtime') AS date_reported,
-            requests.user_id AS user_id 
+            items.user_id AS poster_user_id,
+            requests.user_id AS requester_user_id 
             FROM items 
             LEFT JOIN requests
             ON items.id = requests.item_id
@@ -191,7 +192,8 @@ def found():
                 items.description AS description, 
                 items.image_path AS image_path, 
                 datetime(items.date_reported, 'localtime') AS date_reported,
-                requests.user_id AS user_id 
+                items.user_id AS poster_user_id,
+                requests.user_id AS requester_user_id 
                 FROM items 
                 LEFT JOIN requests
                 ON items.id = requests.item_id
@@ -246,11 +248,11 @@ def request_item(id):
                 INSERT INTO requests (user_id, item_id, message, image_path) 
                 VALUES (?, ?, ?, ?)
                 """,
-                (user_id, id, message, filepath),
+                (user_id, id, message, filepath)
             )
             return redirect("/")
-        except:
-            return error("Unable to upload: Check inputs", 400)
+        except Exception as e:
+            return error(f"Unable to upload: Check inputs{e}", 400)
     # Request form
     return render_template("request.html", item_id=id)
 
