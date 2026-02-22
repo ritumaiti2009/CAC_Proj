@@ -1,10 +1,14 @@
-from flask import redirect, render_template, session
+from flask import flash, redirect, session
 from functools import wraps
 
 
-# Display error and return code
-def error(message, code):
-    return render_template("error.html", num=code, msg=message), code
+# Display alert for success and error statement
+def alert(message, redirect_url, code=None):
+    if code is None:
+        flash(message, "success")
+    else:
+        flash(f"{message} ({code})", "error")
+    return redirect(redirect_url)
 
 
 # Decorate route to require login

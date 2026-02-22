@@ -1,7 +1,7 @@
 from flask import Flask, redirect, render_template, request, session
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from helpers import error, login_required, admin_required
+from helpers import alert, login_required, admin_required
 from image_handler import save_image, del_image
 from db_handler import run_sql, init_db
 
@@ -51,9 +51,9 @@ def register():
                 """,
                 (email, password, first_name, last_name, preferred_name, phone_num),
             )
-            return redirect("/login")
+            return alert("Successfully registed!", "/login")
         except:
-            return error("Unable to register: Email already exists", 409)
+            return alert("Unable to register: Email already exists", "/register", 409)
 
     # Return html layout when GET method received
     return render_template("register.html")
@@ -70,7 +70,9 @@ def login():
         try:
             user = run_sql("SELECT * FROM users WHERE email = ?", (email,))
         except:
-            return error("Unable to login: Failed to fetch login information", 401)
+            return alert(
+                "Unable to login: Failed to fetch login information", "/login", 401
+            )
 
         # Authenticate password
         if user and check_password_hash(user[0][2], password):
@@ -81,9 +83,9 @@ def login():
             else:
                 session["name"] = f"{user[0][3]} {user[0][4]}"
             session["status"] = user[0][7]
-            return redirect("/")
+            return alert("Successfully logged in!", "/")
         else:
-            return error("Unable to login: Incorrect email or password", 401)
+            return alert("Unable to login: Incorrect email or password", "/login", 401)
 
     # Return html layout when GET method received
     return render_template("login.html")
@@ -95,7 +97,24 @@ def login():
 def logout():
     # Remove user from session and return None
     session.pop("user", None)
-    return redirect("/login")
+    return alert("Successfully logged out!", "/login")
+
+
+# Delete account from database
+@app.route("/delete_acount/<int:id>", methods=["POST"])
+@login_required
+def delete_account(id):
+    try:
+        run_sql("DELETE FROM users WHERE id = ?", (id,))
+        return alert("Successfully deleted account!", "/login")
+    except:
+        return alert("Failed to Delete Account", "/", 500)
+
+
+# Set up account setting page
+@app.route("/setting")
+def setting():
+    return render_template("settings.html")
 
 
 # Get item submissions
@@ -132,9 +151,9 @@ def submit():
             """,
             (user_id, email, name, title, description, filepath, status),
         )
-        return redirect("/")
+        return alert("Report successfully submitted!", "/")
     except:
-        return error("Unable to upload: Check inputs", 400)
+        return alert("Unable to upload: Check inputs", "/", 400)
 
 
 # Handles displaying lost items
@@ -171,12 +190,12 @@ def lost():
                 (f"%{keyword}%", f"%{keyword}%"),
             )
         except:
-            return error("Failed to fetch items", 500)
+            return alert("Failed to fetch items", "/", 500)
     else:
         try:
             items_list = run_sql(f"{query} ORDER BY items.date_reported DESC")
         except:
-            return error("Failed to fetch items", 500)
+            return alert("Failed to fetch items", "/", 500)
 
     return render_template("items.html", item_type="Lost Items", items=items_list)
 
@@ -215,12 +234,12 @@ def found():
                 (f"%{keyword}%", f"%{keyword}%"),
             )
         except:
-            return error("Failed to fetch items", 500)
+            return alert("Failed to fetch items", "/", 500)
     else:
         try:
             items_list = run_sql(f"{query} ORDER BY items.date_reported DESC")
         except:
-            return error("Failed to fetch items", 500)
+            return alert("Failed to fetch items", "/", 500)
 
     return render_template("items.html", item_type="Found Items", items=items_list)
 
@@ -248,11 +267,11 @@ def request_item(id):
                 INSERT INTO requests (user_id, item_id, message, image_path) 
                 VALUES (?, ?, ?, ?)
                 """,
-                (user_id, id, message, filepath)
+                (user_id, id, message, filepath),
             )
-            return redirect("/")
-        except Exception as e:
-            return error(f"Unable to upload: Check inputs{e}", 400)
+            return alert("Request successfully submitted!", "/")
+        except:
+            return alert("Unable to upload: Check inputs", 400, "/")
     # Request form
     return render_template("request.html", item_id=id)
 
@@ -293,7 +312,7 @@ def requests():
                 AND (requests.message LIKE ? OR 
                 items.title LIKE ? OR items.description LIKE ?)
                 """
-    
+
     date_order_query = "ORDER BY requests.date_requested DESC"
 
     # Search up specific posts
@@ -337,7 +356,7 @@ def requests():
                 )
             )
         except:
-            return error("Failed to fetch requests", 500)
+            return alert("Failed to fetch requests", "/", 500)
     else:
         try:
             # Get all approved requests with contact info
@@ -363,7 +382,7 @@ def requests():
                 )
             )
         except:
-            return error("Failed to fetch requests", 500)
+            return alert("Failed to fetch requests", "/", 500)
 
     return render_template("requests.html", requests=requests_list)
 
@@ -395,12 +414,12 @@ def manage_items():
                 (f"%{keyword}%", f"%{keyword}%"),
             )
         except:
-            return error("Failed to fetch items", 500)
+            return alert("Failed to fetch items", "/", 500)
     else:
         try:
             items_list = run_sql(f"{query} ORDER BY items.date_reported DESC")
         except:
-            return error("Failed to fetch items", 500)
+            return alert("Failed to fetch items", "/", 500)
 
     return render_template("manage_item.html", items=items_list)
 
@@ -413,8 +432,8 @@ def approve_item(id):
     try:
         run_sql("UPDATE items SET approved = true WHERE id = ?", (id,))
     except:
-        return error("Failed to update", 500)
-    return redirect("/manage_items")
+        return alert("Failed to update", "/manage_items", 500)
+    return alert("Successfully approved item!", "/login")
 
 
 # Delete submission
@@ -431,8 +450,8 @@ def delete_item(id):
         # Delete entry
         run_sql("DELETE FROM items WHERE id = ?", (id,))
     except:
-        return error("Failed to delete", 500)
-    return redirect("/manage_items")
+        return alert("Failed to delete", "/manage_items", 500)
+    return alert("Successfully deleted item!", "/manage_items")
 
 
 # Handles management of requests for admin
@@ -476,12 +495,12 @@ def manage_requests():
                 (f"%{keyword}%", f"%{keyword}%", f"%{keyword}%"),
             )
         except:
-            return error("Failed to fetch requests", 500)
+            return alert("Failed to fetch requests", "/", 500)
     else:
         try:
             request_list = run_sql(f"{query} ORDER BY requests.date_requested DESC")
         except:
-            return error("Failed to fetch requests", 500)
+            return alert("Failed to fetch requests", "/", 500)
 
     return render_template("manage_request.html", requests=request_list)
 
@@ -494,8 +513,8 @@ def approve_request(id):
     try:
         run_sql("UPDATE requests SET status = 'approved' WHERE id = ?", (id,))
     except:
-        return error("Failed to update", 500)
-    return redirect("/manage_requests")
+        return alert("Failed to update", "/manage_requests", 500)
+    return alert("Successfully approved request!", "/manage_requests")
 
 
 # Reject request
@@ -506,8 +525,8 @@ def reject_request(id):
     try:
         run_sql("UPDATE requests SET status = 'rejected' WHERE id = ?", (id,))
     except:
-        return error("Failed to update", 500)
-    return redirect("/manage_requests")
+        return alert("Failed to update", "/manage_requests", 500)
+    return alert("Successfully deleted rquest!", "/manage_requests")
 
 
 """Debugging"""

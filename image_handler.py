@@ -1,6 +1,6 @@
 import os
 
-from helpers import error
+from helpers import alert
 from werkzeug.utils import secure_filename
 
 # Handles image directory
@@ -38,7 +38,7 @@ def save_image(image):
             image.save(filepath)
             return filepath
         else:
-            return error("Error uploading image: Invalid file type", 415)
+            return alert("Error uploading image: Invalid file type", 415)
 
 
 # Remove image from UPLOAD_PATH
