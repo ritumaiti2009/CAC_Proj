@@ -1,4 +1,8 @@
+.prettierrc.json
 .venv/
 .vscode/
 database.db
-uploads/
+static/uploads/
+node_modules/
+package-lock.json
+package.json

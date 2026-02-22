@@ -71,14 +71,15 @@ def login():
             user = run_sql("SELECT * FROM users WHERE email = ?", (email,))
         except:
             return error("Unable to login: Failed to fetch login information", 401)
-        
+
         # Authenticate password
         if user and check_password_hash(user[0][2], password):
             session["user_id"] = user[0][0]
             session["user"] = email
-            session["name"] = f"{user[0][3]} {user[0][4]}"
             if user[0][5]:
-                session["name"] += f" ({user[0][5]})"
+                session["name"] = f"{user[0][5]} {user[0][4]}"
+            else:
+                session["name"] = f"{user[0][3]} {user[0][4]}"
             session["status"] = user[0][7]
             return redirect("/")
         else:
@@ -129,7 +130,7 @@ def submit():
             INSERT INTO items (user_id, email, name, title, description, image_path, status) 
             VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
-            (user_id, email, name, title, description, filepath, status)
+            (user_id, email, name, title, description, filepath, status),
         )
         return redirect("/")
     except:
@@ -147,7 +148,8 @@ def lost():
             items.description AS description, 
             items.image_path AS image_path, 
             datetime(items.date_reported, 'localtime') AS date_reported,
-            requests.user_id AS user_id 
+            items.user_id AS poster_user_id,
+            requests.user_id AS requester_user_id 
             FROM items 
             LEFT JOIN requests
             ON items.id = requests.item_id
@@ -164,6 +166,7 @@ def lost():
                 f"""
                     {query}
                       AND (items.title LIKE ? OR items.description LIKE ?)
+                      ORDER BY items.date_reported DESC
                       """,
                 (f"%{keyword}%", f"%{keyword}%"),
             )
@@ -171,11 +174,11 @@ def lost():
             return error("Failed to fetch items", 500)
     else:
         try:
-            items_list = run_sql(query)
+            items_list = run_sql(f"{query} ORDER BY items.date_reported DESC")
         except:
             return error("Failed to fetch items", 500)
 
-    return render_template("lost.html", items=items_list)
+    return render_template("items.html", item_type="Lost Items", items=items_list)
 
 
 # Handles displaying found items
@@ -189,7 +192,8 @@ def found():
                 items.description AS description, 
                 items.image_path AS image_path, 
                 datetime(items.date_reported, 'localtime') AS date_reported,
-                requests.user_id AS user_id 
+                items.user_id AS poster_user_id,
+                requests.user_id AS requester_user_id 
                 FROM items 
                 LEFT JOIN requests
                 ON items.id = requests.item_id
@@ -206,6 +210,7 @@ def found():
                 f"""
                       {query}
                       AND (items.title LIKE ? OR items.description LIKE ?)
+                      ORDER BY items.date_reported DESC
                       """,
                 (f"%{keyword}%", f"%{keyword}%"),
             )
@@ -213,11 +218,11 @@ def found():
             return error("Failed to fetch items", 500)
     else:
         try:
-            items_list = run_sql(query)
+            items_list = run_sql(f"{query} ORDER BY items.date_reported DESC")
         except:
             return error("Failed to fetch items", 500)
 
-    return render_template("found.html", items=items_list)
+    return render_template("items.html", item_type="Found Items", items=items_list)
 
 
 # Allows user to file for information
@@ -243,11 +248,11 @@ def request_item(id):
                 INSERT INTO requests (user_id, item_id, message, image_path) 
                 VALUES (?, ?, ?, ?)
                 """,
-                (user_id, id, message, filepath),
+                (user_id, id, message, filepath)
             )
             return redirect("/")
-        except:
-            return error("Unable to upload: Check inputs", 400)
+        except Exception as e:
+            return error(f"Unable to upload: Check inputs{e}", 400)
     # Request form
     return render_template("request.html", item_id=id)
 
@@ -288,6 +293,8 @@ def requests():
                 AND (requests.message LIKE ? OR 
                 items.title LIKE ? OR items.description LIKE ?)
                 """
+    
+    date_order_query = "ORDER BY requests.date_requested DESC"
 
     # Search up specific posts
     if request.method == "POST":
@@ -302,12 +309,13 @@ def requests():
                       {header_extra_query}
                       {tail_approved_query}
                       {tail_search_query}
+                      {date_order_query}
                       """,
                 (
                     session.get("user_id"),
                     f"%{keyword}%",
                     f"%{keyword}%",
-                    f"%{keyword}%"
+                    f"%{keyword}%",
                 ),
             )
 
@@ -318,12 +326,13 @@ def requests():
                         {header_query}
                         {tail_unapproved_query}
                         {tail_search_query}
+                        {date_order_query}
                         """,
                     (
                         session.get("user_id"),
                         f"%{keyword}%",
                         f"%{keyword}%",
-                        f"%{keyword}%"
+                        f"%{keyword}%",
                     ),
                 )
             )
@@ -337,6 +346,7 @@ def requests():
                       {header_query},
                       {header_extra_query}
                       {tail_approved_query}
+                      {date_order_query}
                       """,
                 (session.get("user_id"),),
             )
@@ -347,6 +357,7 @@ def requests():
                     f"""
                         {header_query}
                         {tail_unapproved_query}
+                        {date_order_query}
                         """,
                     (session.get("user_id"),),
                 )
@@ -365,7 +376,7 @@ def manage_items():
     # Default query
     query = """
                 SELECT *, 
-                datetime(date_reported, 'localtime') AS localdate
+                datetime(date_reported, 'localtime') AS date_reported
                 FROM items
                 """
 
@@ -379,6 +390,7 @@ def manage_items():
                 f"""
                       {query}
                       FROM items WHERE title LIKE ? OR description LIKE ?
+                      ORDER BY items.date_reported DESC
                       """,
                 (f"%{keyword}%", f"%{keyword}%"),
             )
@@ -386,7 +398,7 @@ def manage_items():
             return error("Failed to fetch items", 500)
     else:
         try:
-            items_list = run_sql(query)
+            items_list = run_sql(f"{query} ORDER BY items.date_reported DESC")
         except:
             return error("Failed to fetch items", 500)
 
@@ -402,7 +414,7 @@ def approve_item(id):
         run_sql("UPDATE items SET approved = true WHERE id = ?", (id,))
     except:
         return error("Failed to update", 500)
-    return redirect("/")
+    return redirect("/manage_items")
 
 
 # Delete submission
@@ -413,14 +425,14 @@ def delete_item(id):
     try:
         # Delete image if it exists
         row = run_sql("SELECT image_path FROM items WHERE id = ?", (id,))
-        if row:
+        if row[0][0]:
             del_image(row[0][0])
 
         # Delete entry
         run_sql("DELETE FROM items WHERE id = ?", (id,))
     except:
         return error("Failed to delete", 500)
-    return redirect("/")
+    return redirect("/manage_items")
 
 
 # Handles management of requests for admin
@@ -459,6 +471,7 @@ def manage_requests():
                     {query}
                     WHERE requests.message LIKE ? OR 
                     items.title LIKE ? OR items.description LIKE ?
+                    ORDER BY requests.date_requested DESC
                     """,
                 (f"%{keyword}%", f"%{keyword}%", f"%{keyword}%"),
             )
@@ -466,7 +479,7 @@ def manage_requests():
             return error("Failed to fetch requests", 500)
     else:
         try:
-            request_list = run_sql(query)
+            request_list = run_sql(f"{query} ORDER BY requests.date_requested DESC")
         except:
             return error("Failed to fetch requests", 500)
 
@@ -482,7 +495,7 @@ def approve_request(id):
         run_sql("UPDATE requests SET status = 'approved' WHERE id = ?", (id,))
     except:
         return error("Failed to update", 500)
-    return redirect("/")
+    return redirect("/manage_requests")
 
 
 # Reject request
@@ -494,7 +507,7 @@ def reject_request(id):
         run_sql("UPDATE requests SET status = 'rejected' WHERE id = ?", (id,))
     except:
         return error("Failed to update", 500)
-    return redirect("/")
+    return redirect("/manage_requests")
 
 
 """Debugging"""

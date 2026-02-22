@@ -1,27 +1,43 @@
 {% extends "list_layout.html" %}
-
-{% block title %}
-    Lost Items
-{% endblock %}
-
+{% block title %}Lost Items{% endblock %}
 {% block card %}
     {% for request in requests %}
-        <div class="card">
-            <h5>Request Status: {{ request["request_status"] }}</h5>
-            <h5>Time: {{ request["date_requested"] }}</h5>
-            <h4>Title: {{ request["title"] }}</h4>
-            <h5>Item Status: {{ request["item_status"] }}</h5>
-            <p>Message: {{ request["message"] }}</p>
-            {% if request["email"] and request["name"] %}
-                <h4>
-                    Contact Info:
-                    {{ request["email"] }},
-                    {{ request["name"] }}
-                </h4>
-            {% endif %}
-            {% if request["image_path"] %}
-                <img src="{{ request['image_path'] }}" alt="{{ request['title'] }}" width="200px">
-            {% endif %}
+        <div class="card m-2">
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <h5 class="card-header {% if request['request_status'] == 'pending' %} bg-secondary {% elif request['request_status'] == 'approved' %} bg-success {% else %} bg-danger {% endif %}">
+                            {{ request["request_status"] }}
+                        </h5>
+                    </li>
+                    {% if request["image_path"] %}
+                        <li class="list-group-item">
+                            <img class="card-img-top"
+                                 src="{{ request['image_path'] }}"
+                                 alt="{{ request['title'] }}"
+                                 width="auto"
+                                 height="auto">
+                        </li>
+                    {% endif %}
+                    <li class="list-group-item">
+                        <h5 class="card-subtitle mb-2 text-body-secondary">{{ request["item_status"] }}</h5>
+                        <h5 class="card-subtitle mb-2 text-body-secondary">{{ request["date_requested"] }}</h5>
+                    </li>
+                    <li class="list-group-item">
+                        <h4 class="card-title">{{ request["title"] }}</h4>
+                    </li>
+                    <li class="list-group-item">
+                        <h5 class="card-text">{{ request["message"] }}</h5>
+                    </li>
+                    {% if request["email"] and request["name"] %}
+                        <li class="list-group-item d-flex flex-column">
+                            <h5 class="card-text">Contact Info:</h5>
+                            <h5 class="card-text">{{ request["email"] }}</h5>
+                            <h5 class="card-text">{{ request["name"] }}</h5>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
         </div>
     {% endfor %}
 {% endblock %}
