@@ -4,18 +4,16 @@
     <div class="card-form card mx-auto d-flex align-items-center">
         <div clas="card-body">
             {% if session.get("user_id") %}
+                <div class="d-flex m-2 align-items-end gap-4">
+                    <label for="deleteBtn" class="form-label">Delete Account:</label>
+                    <button class="btn btn-outline-danger"
+                            type="button"
+                            data-bs-toggle="modal"
+                            data-bs-target="#confirmDeleteModal"
+                            id="deleteBtn">Delete</button>
+                </div>
                 <form method="post"
                       action="{{ url_for('delete_account', id=session.get('user_id') ) }}">
-                    <span data-bs-toggle="tooltip"
-                          data-bs-placement="bottom"
-                          title="Delete permanently">
-                        <label for="deleteBtn" class="form-label">Delete Account:</label>
-                        <button class="btn btn-outline-danger"
-                                type="button"
-                                data-bs-toggle="modal"
-                                data-bs-target="#confirmDeleteModal"
-                                id="deleteBtn">Delete</button>
-                    </span>
                     <div class="modal fade"
                          id="confirmDeleteModal"
                          data-bs-backdrop="static"
@@ -35,6 +33,10 @@
                                 <div class="modal-body">Are you sure you want to delete this account? (This is permanent)</div>
                                 <div class="modal-footer">
                                     <button type="submit" class="btn btn-danger">Confirm Delete</button>
+                                    <button type="button"
+                                            class="btn btn-secondary"
+                                            data-bs-dismiss="modal"
+                                            aria-label="Close">Close</button>
                                 </div>
                             </div>
                         </div>

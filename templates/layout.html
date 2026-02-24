@@ -46,10 +46,9 @@
                                 <a class="nav-link" href="/manage_requests">Manage Requests</a>
                                 <a class="nav-link" href="/manage_items">Manage Items</a>
                             {% endif %}
-                            <a class="nav-link" href="/lost">Lost Items</a>
-                            <a class="nav-link" href="/found">Found Items</a>
+                            <a class="nav-link" href="/items">Items</a>
                             {% if session.get("user") %}
-                                <a class="nav-link" href="/requests">Requests</a>
+                                <a class="nav-link" href="/requests_for">Requests For You</a>
                             {% else %}
                                 <a class="nav-link" href="/login">Log In</a>
                             {% endif %}
@@ -57,7 +56,7 @@
                     </div>
                     {% if session.get("user") %}
                         <div class="dropdown">
-                            <button class="btn dropdown_toggle"
+                            <button class="btn dropdown_toggle me-2"
                                     type="button"
                                     data-bs-toggle="dropdown"
                                     aria-expanded="false">
@@ -71,10 +70,18 @@
                                     <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1" />
                                 </svg>
                             </button>
-                            <ul class="dropdown-menu">
+                            <ul class="dropdown-menu dropdown-menu-end">
                                 <li>
-                                    <a class="dropdown-item" href="/setting">Settings</a>
-                                    <a class="dropdown-item" href="/logout">Log Out</a>
+                                    <h4><a class="dropdown-item" href="/setting">Settings</a></h4>
+                                </li>
+                                <li>
+                                    <h4><a class="dropdown-item" href="/items?user_specific=true">Sent Items</a></h4>
+                                </li>
+                                <li>
+                                    <h4><a class="dropdown-item" href="/requests">Sent Requests</a></h4>
+                                </li>
+                                <li>
+                                    <h4><a class="dropdown-item" href="/logout">Log Out</a></h4>
                                 </li>
                             </ul>
                         </div>

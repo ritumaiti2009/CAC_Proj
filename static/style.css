@@ -4,7 +4,7 @@ body {
     display: flex;
     flex-direction: column;
     font-family: 'Atkinson Hyperlegible', sans-serif;
-    background: linear-gradient(to bottom right, #fff9c4, #ffc0cb);
+    background: linear-gradient(to right, #fff9c4, #ffc0cb, #fff9c4);
     color: #0b3d91;
 }
 
@@ -14,54 +14,21 @@ html{
 
 
 .card {
-    width: 100%;
-    max-width: 520px;
-    margin: 2rem auto;
+    width: 300px;
 }
 
-  .card-form{
-    max-width: 520px;
-    width: calc(100% - 2rem);
-    margin: 2.5rem auto;
-    border-radius: 24px;
-    border: 1px solid rgba(11, 61, 145, 0.12);
-    box-shadow:
-      0 18px 40px rgba(11, 61, 145, 0.12),
-      0 2px 8px rgba(0,0,0,0.06);
-    overflow: hidden; 
-    background: rgba(255,255,255,0.92);
-    backdrop-filter: blur(8px);
-  }
-  .card-form .card-body {
-    overflow-y: auto;
-}
-
-  .card-form .card-body::-webkit-scrollbar {
-    width: 8px;
-}
-
-.card-form .card-body::-webkit-scrollbar-thumb {
-    background-color: rgba(11, 61, 145, 0.4);
-    border-radius: 10px;
-}
-
-.card-header {
-    background: transparent;
-    border: none;
-    font-weight: 600;
-    color: #0b3d91;
-}
-
-h5,
-h6,
-label {
-    color: #0b3d91;
-    font-family: 'Atkinson Hyperlegible', sans-serif;
+.card-form {
+    width: 450px;
+    margin: 64px;
 }
 
 .navbar {
-    background-color: lightgrey;
+    background-color: rgb(255, 255, 255); 
     height: 12%;
+}
+
+.status-box {
+    width: 20px;
 }
 
 .nav-logo {
@@ -125,7 +92,7 @@ span {
     display: inline-block;
 }
 
-@media (min-width: 768px) {
+@media (max-width: 768px) {
     .card {
         width: 400px;
     }
