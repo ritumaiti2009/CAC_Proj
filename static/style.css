@@ -1,5 +1,5 @@
 .card {
-    width: 300px;
+    width: 340px;
 }
 
 .card-form {
@@ -9,6 +9,10 @@
 
 .navbar {
     background-color: rgb(123, 157, 242);
+}
+
+.status-box {
+    width: 20px;
 }
 
 body {
@@ -25,8 +29,21 @@ span {
     display: inline-block;
 }
 
-@media (min-width: 768px) {
+@media (max-width: 768px) {
     .card {
         width: 400px;
+    }
+}
+
+@media (max-width: 420px) {
+    .card {
+        width: 300px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
     }
 }

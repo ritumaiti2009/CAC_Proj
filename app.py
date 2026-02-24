@@ -151,14 +151,14 @@ def submit():
             """,
             (user_id, email, name, title, description, filepath, status),
         )
-        return alert("Report successfully submitted!", "/")
+        return alert("Report successfully submitted! (Must wait for approval)", "/")
     except:
         return alert("Unable to upload: Check inputs", "/", 400)
 
 
-# Handles displaying lost items
-@app.route("/lost", methods=["GET", "POST"])
-def lost():
+# Handles displaying items
+@app.route("/items", methods=["GET", "POST"])
+def items():
     # Default query
     query = """
             SELECT 
@@ -168,80 +168,53 @@ def lost():
             items.image_path AS image_path, 
             datetime(items.date_reported, 'localtime') AS date_reported,
             items.user_id AS poster_user_id,
+            items.status AS status,
             requests.user_id AS requester_user_id 
             FROM items 
             LEFT JOIN requests
             ON items.id = requests.item_id
-            WHERE items.status = 'lost' AND items.approved = true
+            WHERE items.approved = true
             """
+
+    params = []
+
+    # Check if is checking user's specific items
+    if request.args.get("user_specific") == "true":
+        query += " AND items.user_id = ?"
+        params.append(session.get("user_id"))
 
     # Search up specific posts
     if request.method == "POST":
         # Get keyword for querying
         keyword = request.form["keyword"]
+        status = request.form.get("status") or "o"
 
         try:
+            # Add search request to params
+            for i in range(2):
+                params.append(f"%{keyword}%")
+            params.append(f"%{status}%")
+
             items_list = run_sql(
                 f"""
                     {query}
-                      AND (items.title LIKE ? OR items.description LIKE ?)
+                      AND (items.title LIKE ? OR items.description LIKE ?) AND items.status LIKE ?
                       ORDER BY items.date_reported DESC
                       """,
-                (f"%{keyword}%", f"%{keyword}%"),
+                (params),
             )
         except:
             return alert("Failed to fetch items", "/", 500)
     else:
         try:
-            items_list = run_sql(f"{query} ORDER BY items.date_reported DESC")
+            if request.args.get("user_specific") == 'true':
+                items_list = run_sql(f"{query} ORDER BY items.date_reported DESC", (params))
+            else:
+                items_list = run_sql(f"{query} ORDER BY items.date_reported DESC")
         except:
             return alert("Failed to fetch items", "/", 500)
 
-    return render_template("items.html", item_type="Lost Items", items=items_list)
-
-
-# Handles displaying found items
-@app.route("/found", methods=["GET", "POST"])
-def found():
-    # Default query
-    query = """
-                SELECT 
-                items.id AS id, 
-                items.title AS title, 
-                items.description AS description, 
-                items.image_path AS image_path, 
-                datetime(items.date_reported, 'localtime') AS date_reported,
-                items.user_id AS poster_user_id,
-                requests.user_id AS requester_user_id 
-                FROM items 
-                LEFT JOIN requests
-                ON items.id = requests.item_id
-                WHERE items.status = 'found' AND items.approved = true
-                """
-
-    # Search up specific posts
-    if request.method == "POST":
-        # Get keyword for querying
-        keyword = request.form["keyword"]
-
-        try:
-            items_list = run_sql(
-                f"""
-                      {query}
-                      AND (items.title LIKE ? OR items.description LIKE ?)
-                      ORDER BY items.date_reported DESC
-                      """,
-                (f"%{keyword}%", f"%{keyword}%"),
-            )
-        except:
-            return alert("Failed to fetch items", "/", 500)
-    else:
-        try:
-            items_list = run_sql(f"{query} ORDER BY items.date_reported DESC")
-        except:
-            return alert("Failed to fetch items", "/", 500)
-
-    return render_template("items.html", item_type="Found Items", items=items_list)
+    return render_template("items.html", items=items_list)
 
 
 # Allows user to file for information
@@ -269,14 +242,14 @@ def request_item(id):
                 """,
                 (user_id, id, message, filepath),
             )
-            return alert("Request successfully submitted!", "/")
+            return alert("Request successfully submitted! (Must wait for approval)", "/")
         except:
             return alert("Unable to upload: Check inputs", 400, "/")
     # Request form
     return render_template("request.html", item_id=id)
 
 
-# Lists requests for user
+# Lists sent requests of a user
 @app.route("/requests", methods=["GET", "POST"])
 @login_required
 def requests():
@@ -310,7 +283,7 @@ def requests():
 
     tail_search_query = """
                 AND (requests.message LIKE ? OR 
-                items.title LIKE ? OR items.description LIKE ?)
+                items.title LIKE ? OR items.description LIKE ?) AND items.status LIKE ?
                 """
 
     date_order_query = "ORDER BY requests.date_requested DESC"
@@ -319,6 +292,7 @@ def requests():
     if request.method == "POST":
         # Get keyword for querying
         keyword = request.form["keyword"]
+        status = request.form.get("status") or "o"
 
         try:
             # Get all approved requests with contact info
@@ -335,6 +309,7 @@ def requests():
                     f"%{keyword}%",
                     f"%{keyword}%",
                     f"%{keyword}%",
+                    f"%{status}%"
                 ),
             )
 
@@ -352,7 +327,8 @@ def requests():
                         f"%{keyword}%",
                         f"%{keyword}%",
                         f"%{keyword}%",
-                    ),
+                        f"%{status}%"
+                    )
                 )
             )
         except:
@@ -384,7 +360,84 @@ def requests():
         except:
             return alert("Failed to fetch requests", "/", 500)
 
-    return render_template("requests.html", requests=requests_list)
+    return render_template("requests.html", requests=requests_list, for_user=False)
+
+
+# Lists requests for user
+@app.route("/requests_for", methods=["GET", "POST"])
+@login_required
+def requests_for():
+    # Queries variables
+    header_query = """
+                SELECT 
+                requests.id AS id,
+                items.title AS title,
+                items.status AS item_status,
+                requests.message AS message,
+                datetime(requests.date_requested, 'localtime') AS date_requested,
+                requests.image_path AS image_path,
+                requests.status AS request_status,
+                users.email AS email,
+                COALESCE(users.preferred_name, 
+                CONCAT(users.first_name, ' ', users.last_name)) 
+                AS name
+                """
+
+    tail_query = """
+                FROM requests
+                INNER JOIN items ON requests.item_id = items.id
+                INNER JOIN users ON requests.user_id = users.id
+                WHERE items.user_id = ?
+                """
+
+    tail_search_query = """
+                AND (requests.message LIKE ? OR 
+                items.title LIKE ? OR items.description LIKE ?)
+                AND items.status LIKE ?
+                """
+
+    date_order_query = "ORDER BY requests.date_requested DESC"
+
+    # Search up specific posts
+    if request.method == "POST":
+        # Get keyword for querying
+        keyword = request.form["keyword"]
+        status = request.form.get("status") or "o"
+
+        try:
+            # Get all approved requests with contact info
+            requests_list = run_sql(
+                f"""
+                      {header_query}
+                      {tail_query}
+                      {tail_search_query}
+                      {date_order_query}
+                      """,
+                (
+                    session.get("user_id"),
+                    f"%{keyword}%",
+                    f"%{keyword}%",
+                    f"%{keyword}%",
+                    f"%{status}%"
+                ),
+            )
+        except:
+            return alert("Failed to fetch requests", "/", 500)
+    else:
+        try:
+            # Get all approved requests with contact info
+            requests_list = run_sql(
+                f"""
+                      {header_query}
+                      {tail_query}
+                      {date_order_query}
+                      """,
+                (session.get("user_id"),),
+            )
+        except:
+            return alert("Failed to fetch requests", "/", 500)
+
+    return render_template("requests.html", requests=requests_list, for_user=True)
 
 
 # Handles management of posts for admin
@@ -403,17 +456,18 @@ def manage_items():
     if request.method == "POST":
         # Get keyword for querying
         keyword = request.form["keyword"]
+        status = request.form.get("status") or "o"
 
         try:
             items_list = run_sql(
                 f"""
                       {query}
-                      FROM items WHERE title LIKE ? OR description LIKE ?
+                      WHERE (title LIKE ? OR description LIKE ?) AND status LIKE ?
                       ORDER BY items.date_reported DESC
                       """,
-                (f"%{keyword}%", f"%{keyword}%"),
+                (f"%{keyword}%", f"%{keyword}%", f"%{status}%")
             )
-        except:
+        except Exception as e:
             return alert("Failed to fetch items", "/", 500)
     else:
         try:
@@ -433,7 +487,7 @@ def approve_item(id):
         run_sql("UPDATE items SET approved = true WHERE id = ?", (id,))
     except:
         return alert("Failed to update", "/manage_items", 500)
-    return alert("Successfully approved item!", "/login")
+    return alert("Successfully approved item!", "/manage_items")
 
 
 # Delete submission
@@ -483,16 +537,18 @@ def manage_requests():
     if request.method == "POST":
         # Get keyword for querying
         keyword = request.form["keyword"]
+        status = request.form.get("status") or "o"
 
         try:
             request_list = run_sql(
                 f"""
                     {query}
-                    WHERE requests.message LIKE ? OR 
-                    items.title LIKE ? OR items.description LIKE ?
+                    WHERE (requests.message LIKE ? OR 
+                    items.title LIKE ? OR items.description LIKE ?)
+                    AND items.status LIKE ?
                     ORDER BY requests.date_requested DESC
                     """,
-                (f"%{keyword}%", f"%{keyword}%", f"%{keyword}%"),
+                (f"%{keyword}%", f"%{keyword}%", f"%{keyword}%", f"%{status}%")
             )
         except:
             return alert("Failed to fetch requests", "/", 500)
@@ -508,7 +564,6 @@ def manage_requests():
 # Approve request
 @app.route("/approve_request/<int:id>", methods=["POST"])
 @login_required
-@admin_required
 def approve_request(id):
     try:
         run_sql("UPDATE requests SET status = 'approved' WHERE id = ?", (id,))
@@ -520,7 +575,6 @@ def approve_request(id):
 # Reject request
 @app.route("/reject_request/<int:id>", methods=["POST"])
 @login_required
-@admin_required
 def reject_request(id):
     try:
         run_sql("UPDATE requests SET status = 'rejected' WHERE id = ?", (id,))

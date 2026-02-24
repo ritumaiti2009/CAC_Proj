@@ -1,18 +1,24 @@
 {% extends "layout.html" %}
 {% block main %}
     <div class="m-5">
-        <form method="post">
+        <form method="post" id="searchForm">
             <div class="col-auto d-flex">
                 <input type="text"
-                       class="form-control me-2"
+                       class="form-control me-2 flex-grow-1"
                        id="searchInput"
                        name="keyword"
                        placeholder="Search">
+                <select class="form-select me-2 w-auto flex-shrink-0 status-box" name="status" id="select">
+                    <option selected disabled>Type</option>
+                    <option value="o">Both</option>
+                    <option value="lost">Lost</option>
+                    <option value="found">Found</option>
+                </select>
                 <button class="btn btn-outline-primary" type="submit">Search</button>
             </div>
         </form>
     </div>
-    <div class="d-flex flex-wrap">
+    <div class="d-flex flex-wrap justify-content-between">
         {% block card %}{% endblock %}
     </div>
     <script>
