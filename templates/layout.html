@@ -11,6 +11,7 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Vend+Sans:ital,wght@0,300..700;1,300..700&display=swap"
               rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700;800&display=swap" rel="stylesheet">
         <title>
             {% block title %}{% endblock %}
         </title>
@@ -19,11 +20,15 @@
               integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
               crossorigin="anonymous" />
     </head>
+    
     <body>
         <nav class="navbar sticky-top navbar-expand-lg">
             <div class="container-fluid">
                 <h2>
-                    <a class="navbar-brand" href="/">Home</a>
+                    <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+                        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="nav-logo">
+                        Viking Lost and Found Portal
+                    </a>
                 </h2>
                 {% block nav %}
                     <button class="navbar-toggler"

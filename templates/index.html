@@ -2,8 +2,13 @@
 {% block title %}Home{% endblock %}
 {% block main %}
     <div class="card-form card mx-auto d-flex align-items-center">
+       
         <div class="card-body">
-            {% if session.get("user") %}<h6 class="card-header">Welcome {{ session.get("name") }}!</h6>{% endif %}
+              {% if session.get("user") %}
+                     <h6 class="card-header">Logged in as {{ session.get("name") }}!</h6>
+              {% else %}
+                     <h6 class="card-header">Logged in as Guest!</h6>
+              {% endif %}
             <div class="card-header">Report an item</div>
             <form class="mb-3"
                   method="post"
@@ -66,11 +71,11 @@
                        name="description"
                        placeholder="Description">
                 <label for="imageInput" class="form-label">Image:</label>
-                <input type="file"
-                       accept="image/*"
-                       class="form-control"
-                       id="imageInput"
-                       name="image">
+<input type="file"
+       accept="image/*"
+       class="form-control"
+       id="imageInput"
+       name="image">
                 <hr>
                 <button class="btn btn-outline-primary" id="submit" type="submit">Submit</button>
             </form>
