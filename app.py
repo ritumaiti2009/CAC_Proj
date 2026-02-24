@@ -207,7 +207,7 @@ def items():
             return alert("Failed to fetch items", "/", 500)
     else:
         try:
-            if request.args.get("user_specific") == 'true':
+            if request.args.get("user_specific") == "true":
                 items_list = run_sql(f"{query} ORDER BY items.date_reported DESC", (params))
             else:
                 items_list = run_sql(f"{query} ORDER BY items.date_reported DESC")
