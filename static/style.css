@@ -1,21 +1,25 @@
-body {
-    height: 100%;
+html, body {
     margin: 0;
+    padding: 0;
+    min-height: 100vh;   
+}
+
+body {
     display: flex;
     flex-direction: column;
     font-family: 'Atkinson Hyperlegible', sans-serif;
-    background: linear-gradient(to right, #fff9c4, #ffc0cb, #fff9c4);
+    background: linear-gradient(135deg, #fff9c4, #ffc0cb);
+    background-attachment: fixed;  
+    background-repeat: no-repeat;
+    background-size: cover;
     color: #0b3d91;
-}
-
-html{
-    height: 100%;
 }
 
 
 .card {
     width: 300px;
 }
+
 
 .card-form {
     width: 450px;
@@ -47,6 +51,8 @@ p,
 a,
 label {
     padding: .20%;
+    color: #051e48;
+
 }
 
 
