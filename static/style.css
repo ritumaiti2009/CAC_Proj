@@ -1,24 +1,124 @@
-.card {
-    width: 300px;
+body {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Atkinson Hyperlegible', sans-serif;
+    background: linear-gradient(to bottom right, #fff9c4, #ffc0cb);
+    color: #0b3d91;
 }
 
-.card-form {
-    width: 450px;
-    margin: 64px;
+html{
+    height: 100%;
+}
+
+
+.card {
+    width: 100%;
+    max-width: 520px;
+    margin: 2rem auto;
+}
+
+  .card-form{
+    max-width: 520px;
+    width: calc(100% - 2rem);
+    margin: 2.5rem auto;
+    border-radius: 24px;
+    border: 1px solid rgba(11, 61, 145, 0.12);
+    box-shadow:
+      0 18px 40px rgba(11, 61, 145, 0.12),
+      0 2px 8px rgba(0,0,0,0.06);
+    overflow: hidden; 
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+  }
+  .card-form .card-body {
+    overflow-y: auto;
+}
+
+  .card-form .card-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.card-form .card-body::-webkit-scrollbar-thumb {
+    background-color: rgba(11, 61, 145, 0.4);
+    border-radius: 10px;
+}
+
+.card-header {
+    background: transparent;
+    border: none;
+    font-weight: 600;
+    color: #0b3d91;
+}
+
+h5,
+h6,
+label {
+    color: #0b3d91;
+    font-family: 'Atkinson Hyperlegible', sans-serif;
 }
 
 .navbar {
-    background-color: rgb(123, 157, 242);
+    background-color: lightgrey;
+    height: 12%;
 }
 
-body {
-    display: flex;
-    flex-direction: column;
-    font-family: "Vend Sans", sans-serif;
+.nav-logo {
+    height: 70px;
+    width: auto;
+    border-radius: 6px; 
 }
 
-h1, h2, h3, h5, h6, p, a, div, button, input {
-    font-family: "Vend Sans", sans-serif;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+a,
+label {
+    padding: .20%;
+}
+
+
+h1,
+h2,
+h3,
+h5,
+h6,
+p,
+a,
+div,
+button,
+label,
+input {
+    font-family: 'Atkinson Hyperlegible', sans-serif;
+}
+
+#submit{
+    background: linear-gradient(180deg, #ffffff 0%, #ffffff 100%);
+    border: none;
+    color: #b89705;
+    font-weight: 900;
+    border-radius: 10%;
+    padding: 0.7rem 1.5rem;
+    box-shadow: 0 10px 18px rgba(212,175,55,0.25);
+  }
+
+  #submit:hover{
+    transform: translateY(-1px);
+    box-shadow: 0 14px 24px rgba(55, 89, 212, 0.32);
+    color: #0b3d91;
+  }
+
+  #submit:active{
+    transform: translateY(0px);
+  }
+hr {
+    border-top: 1px solid #0b3d91;
+    opacity: 0.2;
 }
 
 span {

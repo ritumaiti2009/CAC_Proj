@@ -11,6 +11,7 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Vend+Sans:ital,wght@0,300..700;1,300..700&display=swap"
               rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700;800&display=swap" rel="stylesheet">
         <title>
             {% block title %}{% endblock %}
         </title>
@@ -19,11 +20,15 @@
               integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
               crossorigin="anonymous" />
     </head>
+    
     <body>
         <nav class="navbar sticky-top navbar-expand-lg">
             <div class="container-fluid">
                 <h2>
-                    <a class="navbar-brand" href="/">Home</a>
+                    <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+                        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="nav-logo">
+                        Viking Lost and Found Portal
+                    </a>
                 </h2>
                 {% block nav %}
                     <button class="navbar-toggler"
@@ -68,6 +73,7 @@
                             </button>
                             <ul class="dropdown-menu">
                                 <li>
+                                    <a class="dropdown-item" href="/setting">Settings</a>
                                     <a class="dropdown-item" href="/logout">Log Out</a>
                                 </li>
                             </ul>
@@ -76,10 +82,43 @@
                 {% endblock %}
             </div>
         </nav>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="toast-container bottom-0 end-0 p-3">
+                        <div id="statusToast"
+                             class="toast {% if category == 'success' %} text-bg-success {% else %} text-bg-danger {% endif %}"
+                             role="alert"
+                             aria-live="assertive"
+                             aria-atomic="true"
+                             data-bs-delay="2000">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="toast-body">
+                                    <strong>{{ message }}</strong>
+                                </div>
+                                <button type="button"
+                                        class="btn-close me-2"
+                                        data-bs-dismiss="toast"
+                                        aria-label="Close"></button>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
         {% block main %}{% endblock %}
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
                 integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
                 crossorigin="anonymous"></script>
         <script src="https://unpkg.com/@popperjs/core@2/dist/umd/popper.js"></script>
+        <script>
+            // Initialize toast if present
+            document.addEventListener("DOMContentLoaded", function () {
+                var toastElList = [].slice.call(document.querySelectorAll('.toast'))
+                toastElList.map(function (toastEl) {
+                    return new bootstrap.Toast(toastEl).show()
+                })
+            });
+        </script>
     </body>
 </html>
