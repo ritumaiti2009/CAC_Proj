@@ -4,7 +4,7 @@ body {
     display: flex;
     flex-direction: column;
     font-family: 'Atkinson Hyperlegible', sans-serif;
-    background: linear-gradient(to bottom right, #fff9c4, #ffc0cb);
+    background: linear-gradient(to right, #fff9c4, #ffc0cb, #fff9c4);
     color: #0b3d91;
 }
 
@@ -23,7 +23,7 @@ html{
 }
 
 .navbar {
-    background-color: lightgrey;
+    background-color: rgb(255, 255, 255); 
     height: 12%;
 }
 

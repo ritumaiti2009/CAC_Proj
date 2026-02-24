@@ -1,6 +1,7 @@
 .prettierrc.json
 .venv/
 .vscode/
+__pycache__
 database.db
 static/uploads/
 node_modules/
