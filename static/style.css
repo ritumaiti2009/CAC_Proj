@@ -8,7 +8,7 @@ body {
     display: flex;
     flex-direction: column;
     font-family: 'Atkinson Hyperlegible', sans-serif;
-    background: linear-gradient(135deg, #fff9c4, #ffc0cb);
+    background: linear-gradient(135deg, #c8e9f6, #ade3f8);
     background-attachment: fixed;  
     background-repeat: no-repeat;
     background-size: cover;
