@@ -11,7 +11,8 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Vend+Sans:ital,wght@0,300..700;1,300..700&display=swap"
               rel="stylesheet">
-        <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700;800&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700;800&display=swap"
+              rel="stylesheet">
         <title>
             {% block title %}{% endblock %}
         </title>
@@ -20,13 +21,16 @@
               integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
               crossorigin="anonymous" />
     </head>
-    
     <body>
         <nav class="navbar sticky-top navbar-expand-lg">
             <div class="container-fluid">
                 <h2>
                     <a class="navbar-brand d-flex align-items-center gap-2" href="/">
-                        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="nav-logo">
+                        <img src="{{ url_for('static', filename='logo.png') }}"
+                             alt="Logo"
+                             class="nav-logo"
+                             width="auto"
+                             height="70px">
                         Viking Recovery Portal
                     </a>
                 </h2>
@@ -42,7 +46,7 @@
                     </button>
                     <div class="collapse navbar-collapse" id="navbarContent">
                         <div class="navbar-nav d-flex align-items-center">
-                            {% if session.get("user") and session.get("status") == "admin" %}
+                            {% if session.get("user") and session.get("role") == "admin" %}
                                 <a class="nav-link" href="/manage_requests">Manage Requests</a>
                                 <a class="nav-link" href="/manage_items">Manage Items</a>
                             {% endif %}
@@ -55,7 +59,7 @@
                         </div>
                     </div>
                     {% if session.get("user") %}
-                        <div class="dropdown">
+                        <div class="dropdown ms-auto">
                             <button class="btn dropdown_toggle me-2"
                                     type="button"
                                     data-bs-toggle="dropdown"
@@ -72,16 +76,24 @@
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li>
-                                    <h4><a class="dropdown-item" href="/setting">Settings</a></h4>
+                                    <h4>
+                                        <a class="dropdown-item" href="/setting">Settings</a>
+                                    </h4>
                                 </li>
                                 <li>
-                                    <h4><a class="dropdown-item" href="/items?user_specific=true">Sent Items</a></h4>
+                                    <h4>
+                                        <a class="dropdown-item" href="/items?user_specific=true">Sent Items</a>
+                                    </h4>
                                 </li>
                                 <li>
-                                    <h4><a class="dropdown-item" href="/requests">Sent Requests</a></h4>
+                                    <h4>
+                                        <a class="dropdown-item" href="/requests">Sent Requests</a>
+                                    </h4>
                                 </li>
                                 <li>
-                                    <h4><a class="dropdown-item" href="/logout">Log Out</a></h4>
+                                    <h4>
+                                        <a class="dropdown-item" href="/logout">Log Out</a>
+                                    </h4>
                                 </li>
                             </ul>
                         </div>

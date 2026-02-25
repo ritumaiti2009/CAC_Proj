@@ -17,7 +17,7 @@ body {
 
 
 .card {
-    width: 300px;
+    width: 350px;
     box-shadow: 0 10px 25px rgba(13, 10, 95, 0.2);
 }
 
@@ -99,8 +99,8 @@ span {
     display: inline-block;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 410px) {
     .card {
-        width: 400px;
+        width: 300px;
     }
 }

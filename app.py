@@ -49,6 +49,12 @@ def index():
 def register():
     # Attempt to register new account when a POST received
     if request.method == "POST":
+        # Check if user entered correct password confirmation
+        if request.form["password"] != request.form["password_confirm"]:
+            return alert(
+                "Unable to register: Incorrect Password Confirmation", "/register", 409
+            )
+
         # Get required attributes
         email = request.form["email"]
         password = generate_password_hash(
@@ -88,7 +94,9 @@ def register():
         except:
             return alert("Unable to register: Email already exists", "/register", 409)
 
-    # Return html layout when GET method received
+    # Return user to homepage if they are logged in
+    if "user" in session:
+        return redirect("/")
     return render_template("register.html")
 
 
@@ -104,7 +112,7 @@ def login():
             user = run_sql("SELECT * FROM users WHERE email = ?", (email,))
         except:
             return alert(
-                "Unable to login: Failed to fetch login information", "/login", 401
+                "Unable to login: Failed to fetch login information", "/login", 500
             )
 
         # Authenticate password
@@ -135,34 +143,85 @@ def logout():
     return alert("Successfully logged out!", "/login")
 
 
-# Delete account from database
-@app.route("/delete_acount/<int:id>", methods=["POST"])
-def delete_account(id):
-    try:
-        run_sql("DELETE FROM users WHERE id = ?", (id,))
-        send_email(
-            app,
-            "VRP Account Deleted",
-            """
-            Dear user,
-
-            We want to confirm that your account had been deleted from Viking Recovery Portal.
-            If this wasn't you, please contact us!
-
-            Best Wishes,
-            Kevin from VRP,
-            """,
-            session.get("user") 
-        )
-        return alert("Successfully deleted account!", "/logout")
-    except:
-        return alert("Failed to Delete Account", "/", 500)
-
-
 # Set up account setting page
-@app.route("/setting")
+@app.route("/setting", methods=["GET", "POST"])
+@login_required
 def setting():
-    return render_template("settings.html")
+    if request.method == "POST":
+        # Get account password from db
+        try:
+            account_password = run_sql(
+                "SELECT password FROM users WHERE email = ?", (session.get("user"),)
+            )
+        except:
+            return alert(
+                "Failed to Update Account: Failed to fetch login information",
+                "/setting",
+                500,
+            )
+
+        # Authenticate password
+        password = request.form["password"]
+        if not account_password or not check_password_hash(
+            account_password[0][0], password
+        ):
+            return alert(
+                "Failed to Update Account: Incorrect Password", "/setting", 401
+            )
+
+        try:
+            # Get required attributes
+            email = request.form["email"]
+            first_name = request.form["first_name"]
+            last_name = request.form["last_name"]
+            preferred_name = request.form["preferred_name"].strip() or None
+            phone_num = request.form["phone_num"].strip() or None
+
+            # Update sql
+            run_sql(
+                """
+                UPDATE users
+                SET first_name = ?,
+                last_name = ?,
+                email = ?,
+                preferred_name = ?,
+                phone_num = ?
+                WHERE id = ?
+                """,
+                (
+                    first_name,
+                    last_name,
+                    email,
+                    preferred_name,
+                    phone_num,
+                    session.get("user_id"),
+                ),
+            )
+
+            # Update session info
+            session["user"] = email
+            if preferred_name:
+                session["name"] = f"{preferred_name} {last_name}"
+            else:
+                session["name"] = f"{first_name} {last_name}"
+
+            return alert("Successfully updated account informations!", "/")
+        except Exception as e:
+            return alert(f"Failed to Update Account {e}", "/setting", 500)
+    else:
+        user_info = run_sql(
+            """
+            SELECT
+            first_name,
+            last_name,
+            email,
+            preferred_name,
+            phone_num
+            FROM users WHERE id = ?
+            """,
+            (session.get("user_id"),),
+        )
+        return render_template("settings.html", user=user_info)
 
 
 # Get item submissions

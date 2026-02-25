@@ -40,11 +40,11 @@
                         {% if request["request_status"] == "pending" %}
                             <li class="list-group-item d-flex gap-2">
                                 <form method="post"
-                                    action="{{ url_for('approve_request', id=request['id']) }}">
+                                      action="{{ url_for('approve_request', id=request['id']) }}">
                                     <button class="btn btn-outline-success" type="submit">Approve</button>
                                 </form>
                                 <form method="post"
-                                    action="{{ url_for('reject_request', id=request['id']) }}">
+                                      action="{{ url_for('reject_request', id=request['id']) }}">
                                     <button class="btn btn-outline-danger" type="submit">Reject</button>
                                 </form>
                             </li>
