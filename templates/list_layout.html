@@ -8,7 +8,9 @@
                        id="searchInput"
                        name="keyword"
                        placeholder="Search">
-                <select class="form-select me-2 w-auto flex-shrink-0 status-box" name="status" id="select">
+                <select class="form-select me-2 w-auto flex-shrink-0 status-box"
+                        name="status"
+                        id="select">
                     <option selected disabled>Type</option>
                     <option value="o">All</option>
                     <option value="lost">Lost</option>
@@ -19,7 +21,7 @@
             </div>
         </form>
     </div>
-    <div class="d-flex flex-wrap justify-content-between">
+    <div class="d-flex flex-wrap mx-auto">
         {% block card %}{% endblock %}
     </div>
     <script>

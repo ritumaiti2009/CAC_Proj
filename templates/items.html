@@ -6,7 +6,9 @@
             <div class="card-body">
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">
-                        <h5 class="card-header text-capitalize {% if item['status'] == 'lost' %} bg-warning {% elif item['status'] == 'found' %} bg-info {% else %} bg-light {% endif %}">{{ item["status"] }}</h5>
+                        <h5 class="card-header text-capitalize {% if item['status'] == 'lost' %} bg-warning {% elif item['status'] == 'found' %} bg-info {% else %} bg-light {% endif %}">
+                            {{ item["status"] }}
+                        </h5>
                     </li>
                     {% if item["image_path"] %}
                         <li class="list-group-item">
@@ -57,15 +59,13 @@
                         <li class="list-group-item d-flex gap-2">
                             {% if item["status"] != 'resolved' %}
                                 <form method="post" action="{{ url_for('resolve_item', id=item['id']) }}">
-                                    <button class="btn btn-outline-dark"
-                                        type="submit"
-                                        id="resolveBtn">Resolve</button>
+                                    <button class="btn btn-outline-dark" type="submit" id="resolveBtn">Resolve</button>
                                 </form>
                             {% endif %}
                             <form method="post" action="{{ url_for('delete_item', id=item['id']) }}">
                                 <span data-bs-toggle="tooltip"
-                                    data-bs-placement="bottom"
-                                    title="Delete permanently">
+                                      data-bs-placement="bottom"
+                                      title="Delete permanently">
                                     <button class="btn btn-outline-danger"
                                             type="button"
                                             data-bs-toggle="modal"
@@ -73,12 +73,12 @@
                                             id="deleteBtn">Delete</button>
                                 </span>
                                 <div class="modal fade"
-                                    id="confirmDeleteModal{{ item['id'] }}"
-                                    data-bs-backdrop="static"
-                                    data-bs-keyboard="false"
-                                    tabindex="-1"
-                                    aria-labelledby="confirmDeleteModal{{ item['id'] }}"
-                                    aria-hidden="true">
+                                     id="confirmDeleteModal{{ item['id'] }}"
+                                     data-bs-backdrop="static"
+                                     data-bs-keyboard="false"
+                                     tabindex="-1"
+                                     aria-labelledby="confirmDeleteModal{{ item['id'] }}"
+                                     aria-hidden="true">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header">
@@ -92,9 +92,9 @@
                                             <div class="modal-footer">
                                                 <button type="submit" class="btn btn-danger">Confirm Delete</button>
                                                 <button type="button"
-                                                class="btn btn-secondary"
-                                                data-bs-dismiss="modal"
-                                                aria-label="Close">Close</button>
+                                                        class="btn btn-secondary"
+                                                        data-bs-dismiss="modal"
+                                                        aria-label="Close">Close</button>
                                             </div>
                                         </div>
                                     </div>

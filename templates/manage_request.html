@@ -11,7 +11,9 @@
                         </h5>
                     </li>
                     <li class="list-group-item">
-                        <h5 class="card-text text-capitalize {% if request['item_status'] == 'lost' %} text-warning {% elif request['item_status'] == 'found' %} text-info {% else %} text-dark {% endif %}">{{ request["item_status"] }}</h5>
+                        <h5 class="card-text text-capitalize {% if request['item_status'] == 'lost' %} text-warning {% elif request['item_status'] == 'found' %} text-info {% else %} text-dark {% endif %}">
+                            {{ request["item_status"] }}
+                        </h5>
                     </li>
                     <li class="list-group-item">
                         <h5 class="card-subtitle mb-2 text-body-secondary">{{ request["date_requested"] }}</h5>
@@ -44,11 +46,11 @@
                     {% if request["request_status"] == "pending" %}
                         <li class="list-group-item d-flex gap-2">
                             <form method="post"
-                                action="{{ url_for('approve_request', id=request['id']) }}">
+                                  action="{{ url_for('approve_request', id=request['id']) }}">
                                 <button class="btn btn-outline-success" type="submit">Approve</button>
                             </form>
                             <form method="post"
-                                action="{{ url_for('reject_request', id=request['id']) }}">
+                                  action="{{ url_for('reject_request', id=request['id']) }}">
                                 <button class="btn btn-outline-danger" type="submit">Reject</button>
                             </form>
                         </li>
