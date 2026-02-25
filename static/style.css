@@ -1,15 +1,18 @@
-body {
-    height: 100%;
+html, body {
     margin: 0;
+    padding: 0;
+    min-height: 100vh;   
+}
+
+body {
     display: flex;
     flex-direction: column;
     font-family: 'Atkinson Hyperlegible', sans-serif;
-    background: linear-gradient(to right, #fff9c4, #ffc0cb, #fff9c4);
+    background: linear-gradient(135deg, #c8e9f6, #ade3f8);
+    background-attachment: fixed;  
+    background-repeat: no-repeat;
+    background-size: cover;
     color: #0b3d91;
-}
-
-html{
-    height: 100%;
 }
 
 
@@ -17,9 +20,11 @@ html{
     width: 300px;
 }
 
+
 .card-form {
     width: 450px;
     margin: 64px;
+    box-shadow: 0 10px 25px rgba(13, 10, 95, 0.2);
 }
 
 .navbar {
@@ -47,6 +52,8 @@ p,
 a,
 label {
     padding: .20%;
+    color: #051e48;
+
 }
 
 
@@ -65,19 +72,18 @@ input {
 }
 
 #submit{
-    background: linear-gradient(180deg, #ffffff 0%, #ffffff 100%);
+    background: linear-gradient(180deg, #1E55EB 0%, #1E55EB 100%);
     border: none;
-    color: #b89705;
+    color: #ffffff;
     font-weight: 900;
     border-radius: 10%;
     padding: 0.7rem 1.5rem;
-    box-shadow: 0 10px 18px rgba(212,175,55,0.25);
+    box-shadow: 0 10px 18px rgba(7, 8, 67, 0.25);
   }
 
   #submit:hover{
     transform: translateY(-1px);
-    box-shadow: 0 14px 24px rgba(55, 89, 212, 0.32);
-    color: #0b3d91;
+    box-shadow: 0 14px 24px rgba(60, 98, 235, 0.32);
   }
 
   #submit:active{
