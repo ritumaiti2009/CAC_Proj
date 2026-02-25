@@ -1,15 +1,34 @@
+import os
+
 from flask import Flask, redirect, render_template, request, session
+from dotenv import load_dotenv
 from werkzeug.security import check_password_hash, generate_password_hash
 
+from db_handler import run_sql, init_db
+from email_handler import send_email
 from helpers import alert, login_required, admin_required
 from image_handler import save_image, del_image
-from db_handler import run_sql, init_db
 
 # Configure application
 app = Flask(__name__)
 app.secret_key = "fbla_lost_and_found".encode(
     "utf8"
 )  # Required for flask session security
+
+
+# Load .env for secured username and password of mail
+load_dotenv()
+
+
+# Set up config for email
+app.config.update(
+    MAIL_SERVER="smtp.gmail.com",
+    MAIL_PORT=587,
+    MAIL_USE_TLS=True,
+    MAIL_USERNAME=os.getenv("MAIL_USERNAME"),
+    MAIL_PASSWORD=os.getenv("MAIL_PASSWORD"),
+    MAIL_DEFAULT_SENDER=os.getenv("MAIL_USERNAME"),
+)
 
 
 """App routes"""
@@ -51,6 +70,20 @@ def register():
                 """,
                 (email, password, first_name, last_name, preferred_name, phone_num),
             )
+            send_email(
+                app,
+                "Your Email has been used to Register in VRP",
+                """
+                Dear user
+
+                Your email has recently been used to register an account with Viking Recovery Portal.
+                If this wasn't you, please contact us!
+
+                Best Wishes,
+                Kevin from VRP
+                """,
+                f"{email}",
+            )
             return alert("Successfully registed!", "/login")
         except:
             return alert("Unable to register: Email already exists", "/register", 409)
@@ -88,6 +121,8 @@ def login():
             return alert("Unable to login: Incorrect email or password", "/login", 401)
 
     # Return html layout when GET method received
+    if "user" in session:
+        return redirect("/")
     return render_template("login.html")
 
 
@@ -102,11 +137,24 @@ def logout():
 
 # Delete account from database
 @app.route("/delete_acount/<int:id>", methods=["POST"])
-@login_required
 def delete_account(id):
     try:
         run_sql("DELETE FROM users WHERE id = ?", (id,))
-        return alert("Successfully deleted account!", "/login")
+        send_email(
+            app,
+            "VRP Account Deleted",
+            """
+            Dear user,
+
+            We want to confirm that your account had been deleted from Viking Recovery Portal.
+            If this wasn't you, please contact us!
+
+            Best Wishes,
+            Kevin from VRP,
+            """,
+            session.get("user") 
+        )
+        return alert("Successfully deleted account!", "/logout")
     except:
         return alert("Failed to Delete Account", "/", 500)
 
@@ -208,7 +256,9 @@ def items():
     else:
         try:
             if request.args.get("user_specific") == "true":
-                items_list = run_sql(f"{query} ORDER BY items.date_reported DESC", (params))
+                items_list = run_sql(
+                    f"{query} ORDER BY items.date_reported DESC", (params)
+                )
             else:
                 items_list = run_sql(f"{query} ORDER BY items.date_reported DESC")
         except:
@@ -242,7 +292,37 @@ def request_item(id):
                 """,
                 (user_id, id, message, filepath),
             )
-            return alert("Request successfully submitted! (Must wait for approval)", "/")
+
+            # Send confirmation email for original poster
+            title = run_sql("SELECT title FROM items WHERE id = ?", id)
+            requester = run_sql(
+                """
+                SELECT 
+                COALESCE(users.preferred_name, 
+                CONCAT(users.first_name, ' ', users.last_name)) AS name,
+                email
+                FROM users WHERE id = ?
+                """,
+                (user_id,),
+            )
+            send_email(
+                app,
+                "Confirm Request"
+                f"""
+                Dear user,
+
+                Your post of id {id} titled {title} had gotten a request from {requester['name']} at {requester['email']}.
+                To confirm please go to "Request For You" on the Viking Recovery Portal Page.
+
+                Best Wishes,
+                Kevin from VRP
+                """,
+                session.get("user"),
+            )
+
+            return alert(
+                "Request successfully submitted! (Must wait for approval)", "/"
+            )
         except:
             return alert("Unable to upload: Check inputs", 400, "/")
     # Request form
@@ -309,7 +389,7 @@ def requests():
                     f"%{keyword}%",
                     f"%{keyword}%",
                     f"%{keyword}%",
-                    f"%{status}%"
+                    f"%{status}%",
                 ),
             )
 
@@ -327,8 +407,8 @@ def requests():
                         f"%{keyword}%",
                         f"%{keyword}%",
                         f"%{keyword}%",
-                        f"%{status}%"
-                    )
+                        f"%{status}%",
+                    ),
                 )
             )
         except:
@@ -418,7 +498,7 @@ def requests_for():
                     f"%{keyword}%",
                     f"%{keyword}%",
                     f"%{keyword}%",
-                    f"%{status}%"
+                    f"%{status}%",
                 ),
             )
         except:
@@ -465,7 +545,7 @@ def manage_items():
                       WHERE (title LIKE ? OR description LIKE ?) AND status LIKE ?
                       ORDER BY items.date_reported DESC
                       """,
-                (f"%{keyword}%", f"%{keyword}%", f"%{status}%")
+                (f"%{keyword}%", f"%{keyword}%", f"%{status}%"),
             )
         except Exception as e:
             return alert("Failed to fetch items", "/", 500)
@@ -548,7 +628,7 @@ def manage_requests():
                     AND items.status LIKE ?
                     ORDER BY requests.date_requested DESC
                     """,
-                (f"%{keyword}%", f"%{keyword}%", f"%{keyword}%", f"%{status}%")
+                (f"%{keyword}%", f"%{keyword}%", f"%{keyword}%", f"%{status}%"),
             )
         except:
             return alert("Failed to fetch requests", "/", 500)

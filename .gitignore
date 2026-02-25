@@ -1,4 +1,4 @@
-.prettierrc.json
+.env
 .venv/
 .vscode/
 __pycache__

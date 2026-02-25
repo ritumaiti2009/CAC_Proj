@@ -4,7 +4,7 @@ body {
     display: flex;
     flex-direction: column;
     font-family: 'Atkinson Hyperlegible', sans-serif;
-    background: linear-gradient(to right, #fff9c4, #ffc0cb, #fff9c4);
+    background: linear-gradient(to right, #8ac0e7, #5667e6, #8ac0e7);
     color: #0b3d91;
 }
 
