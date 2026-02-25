@@ -6,7 +6,7 @@
             <div class="card-body">
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">
-                        <h5 class="card-header {% if item['approved'] == 0 %} bg-secondary {% else %} bg-success {% endif %}">
+                        <h5 class="card-header text-capitalize {% if item['approved'] == 0 %} bg-secondary {% else %} bg-success {% endif %}">
                             {% if item["approved"] == 0 %}
                                 <em>pending</em>
                             {% else %}
@@ -15,7 +15,7 @@
                         </h5>
                     </li>
                     <li class="list-group-item">
-                        <h5 class="card-text">{{ item["status"] }}</h5>
+                        <h5 class="card-text text-capitalize {% if item['status'] == 'lost' %} text-warning {% elif item['status'] == 'found' %} text-info {% else %} text-dark {% endif %}">{{ item["status"] }}</h5>
                     </li>
                     <li class="list-group-item">
                         <h5 class="card-subtitle mb-2 text-body-secondary">{{ item["date_reported"] }}</h5>
@@ -51,6 +51,12 @@
                                       title="Approve to public">
                                     <button class="btn btn-outline-success" type="submit">Approve</button>
                                 </span>
+                            </form>
+                        {% elif item["status"] != "resolved" %}
+                            <form method="post" action="{{ url_for('resolve_item', id=item['id']) }}">
+                                <button class="btn btn-outline-dark"
+                                    type="submit"
+                                    id="resolveBtn">Resolve</button>
                             </form>
                         {% endif %}
                         <form method="post" action="{{ url_for('delete_item', id=item['id']) }}">

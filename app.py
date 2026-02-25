@@ -115,7 +115,7 @@ def login():
                 session["name"] = f"{user[0][5]} {user[0][4]}"
             else:
                 session["name"] = f"{user[0][3]} {user[0][4]}"
-            session["status"] = user[0][7]
+            session["role"] = user[0][7]
             return alert("Successfully logged in!", "/")
         else:
             return alert("Unable to login: Incorrect email or password", "/login", 401)
@@ -227,6 +227,7 @@ def items():
     params = []
 
     # Check if is checking user's specific items
+    user_specific = request.args.get("user_specific") or "false"
     if request.args.get("user_specific") == "true":
         query += " AND items.user_id = ?"
         params.append(session.get("user_id"))
@@ -264,7 +265,7 @@ def items():
         except:
             return alert("Failed to fetch items", "/", 500)
 
-    return render_template("items.html", items=items_list)
+    return render_template("items.html", items=items_list, user_specific=user_specific)
 
 
 # Allows user to file for information
@@ -558,7 +559,7 @@ def manage_items():
     return render_template("manage_item.html", items=items_list)
 
 
-# Approve submission
+# Approve submission only by Admin
 @app.route("/approve_item/<int:id>", methods=["POST"])
 @login_required
 @admin_required
@@ -570,22 +571,53 @@ def approve_item(id):
     return alert("Successfully approved item!", "/manage_items")
 
 
-# Delete submission
+# Delete submission only if by user or done by an Admin
 @app.route("/delete_item/<int:id>", methods=["POST"])
 @login_required
-@admin_required
 def delete_item(id):
-    try:
-        # Delete image if it exists
-        row = run_sql("SELECT image_path FROM items WHERE id = ?", (id,))
-        if row[0][0]:
-            del_image(row[0][0])
+    # Checking if user_id matches or they're an Admin
+    user_id = run_sql("SELECT user_id FROM items WHERE id = ?", (id,))
+    if session.get("role") == "admin" or user_id[0][0] == session.get("user_id"):
+        try:
+            # Delete image if it exists
+            row = run_sql("SELECT image_path FROM items WHERE id = ?", (id,))
+            if row[0][0]:
+                del_image(row[0][0])
 
-        # Delete entry
-        run_sql("DELETE FROM items WHERE id = ?", (id,))
-    except:
-        return alert("Failed to delete", "/manage_items", 500)
-    return alert("Successfully deleted item!", "/manage_items")
+            # Delete entry
+            run_sql("DELETE FROM items WHERE id = ?", (id,))
+        except:
+            if session.get("role") == "admin":
+                return alert("Failed to delete", "/manage_items", 500)
+            else:
+                return alert("Failed to delete", "/", 500)
+        if session.get("role") == "admin":
+            return alert("Successfully deleted item!", "/manage_items")
+        else:
+            return alert("Successfully deleted item!", "/")
+    return alert("Failed to delete: Unauthorized", "/", 401)
+
+
+# Handles resolving items post
+@app.route("/resolve_item/<int:id>", methods=["POST"])
+@login_required
+def resolve_item(id):
+    # Checking if user_id matches or they're an Admin
+    user_id = run_sql("SELECT user_id FROM items WHERE id = ?", (id,))
+    if session.get("role") == "admin" or user_id[0][0] == session.get("user_id"):
+        try:
+            # Update entry
+            run_sql("UPDATE items SET status = 'resolved' WHERE id = ?", (id,))
+        except:
+            if session.get("role") == "admin":
+                return alert("Failed to update", "/manage_items", 500)
+            else:
+                return alert("Failed to update", "/", 500)
+        if session.get("role") == "admin":
+            return alert("Successfully updated item!", "/manage_items")
+        else:
+            return alert("Successfully updated item!", "/")
+    return alert("Failed to update: Unauthorized", "/", 401)
 
 
 # Handles management of requests for admin
