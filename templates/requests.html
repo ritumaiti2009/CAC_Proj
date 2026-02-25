@@ -6,7 +6,7 @@
             <div class="card-body">
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">
-                        <h5 class="card-header {% if request['request_status'] == 'pending' %} bg-secondary {% elif request['request_status'] == 'approved' %} bg-success {% else %} bg-danger {% endif %}">
+                        <h5 class="card-header text-capitalize {% if request['request_status'] == 'pending' %} bg-secondary {% elif request['request_status'] == 'approved' %} bg-success {% else %} bg-danger {% endif %}">
                             {{ request["request_status"] }}
                         </h5>
                     </li>
@@ -20,7 +20,7 @@
                         </li>
                     {% endif %}
                     <li class="list-group-item">
-                        <h5 class="card-subtitle mb-2 text-body-secondary">{{ request["item_status"] }}</h5>
+                        <h5 class="card-subtitle text-capitalize mb-2 text-body-secondary">{{ request["item_status"] }}</h5>
                         <h5 class="card-subtitle mb-2 text-body-secondary">{{ request["date_requested"] }}</h5>
                     </li>
                     <li class="list-group-item">

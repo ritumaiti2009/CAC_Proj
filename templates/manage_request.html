@@ -6,12 +6,12 @@
             <div class="card-body">
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">
-                        <h5 class="card-header {% if request['request_status'] == 'pending' %} bg-secondary {% elif request['request_status'] == 'approved' %} bg-success {% else %} bg-danger {% endif %}">
+                        <h5 class="card-header text-capitalize {% if request['request_status'] == 'pending' %} bg-secondary {% elif request['request_status'] == 'approved' %} bg-success {% else %} bg-danger {% endif %}">
                             {{ request["request_status"] }}
                         </h5>
                     </li>
                     <li class="list-group-item">
-                        <h5 class="card-text">{{ request["item_status"] }}</h5>
+                        <h5 class="card-text text-capitalize {% if request['item_status'] == 'lost' %} text-warning {% elif request['item_status'] == 'found' %} text-info {% else %} text-dark {% endif %}">{{ request["item_status"] }}</h5>
                     </li>
                     <li class="list-group-item">
                         <h5 class="card-subtitle mb-2 text-body-secondary">{{ request["date_requested"] }}</h5>
@@ -41,18 +41,18 @@
                                  height="auto">
                         </li>
                     {% endif %}
-                    <li class="list-group-item d-flex gap-2">
-                        {% if request["request_status"] == "pending" %}
+                    {% if request["request_status"] == "pending" %}
+                        <li class="list-group-item d-flex gap-2">
                             <form method="post"
-                                  action="{{ url_for('approve_request', id=request['id']) }}">
+                                action="{{ url_for('approve_request', id=request['id']) }}">
                                 <button class="btn btn-outline-success" type="submit">Approve</button>
                             </form>
                             <form method="post"
-                                  action="{{ url_for('reject_request', id=request['id']) }}">
+                                action="{{ url_for('reject_request', id=request['id']) }}">
                                 <button class="btn btn-outline-danger" type="submit">Reject</button>
                             </form>
-                        {% endif %}
-                    </li>
+                        </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
