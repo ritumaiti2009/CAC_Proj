@@ -104,3 +104,10 @@ span {
         width: 300px;
     }
 }
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+    }
+} 

@@ -338,7 +338,7 @@ def request_item(id):
 
         # Get submission from form
         message = request.form["message"]
-        image = request.files.get("image")
+        image = request.files.get("image") or None
 
         # Save image and get path
         filepath = save_image(image)
@@ -354,37 +354,38 @@ def request_item(id):
             )
 
             # Send confirmation email for original poster
-            title = run_sql("SELECT title FROM items WHERE id = ?", id)
+            op = run_sql("SELECT title, email FROM items WHERE id = ?", (id,))
             requester = run_sql(
                 """
                 SELECT 
                 COALESCE(users.preferred_name, 
-                CONCAT(users.first_name, ' ', users.last_name)) AS name,
+                CONCAT(users.first_name, ' ', users.last_name)),
                 email
                 FROM users WHERE id = ?
                 """,
                 (user_id,),
             )
+            
             send_email(
                 app,
-                "Confirm Request"
+                "Confirm Request",
                 f"""
                 Dear user,
 
-                Your post of id {id} titled {title} had gotten a request from {requester['name']} at {requester['email']}.
+                Your post of id {id} titled {op[0][0]} had gotten a request from {requester[0][0]} at {requester[0][1]}.
                 To confirm please go to "Request For You" on the Viking Recovery Portal Page.
 
                 Best Wishes,
                 Kevin from VRP
                 """,
-                session.get("user"),
+                (op[0][1])
             )
 
             return alert(
                 "Request successfully submitted! (Must wait for approval)", "/"
             )
         except:
-            return alert("Unable to upload: Check inputs", 400, "/")
+            return alert("Unable to upload: Check inputs", "/", 400)
     # Request form
     return render_template("request.html", item_id=id)
 
