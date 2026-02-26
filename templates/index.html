@@ -3,6 +3,7 @@
 {% block main %}
     <div class="card-form card mx-auto d-flex align-items-center">
         <div class="card-body">
+            <h3 id = "card-quote">Lost something? Let's bring it back home!</h3>
             {% if session.get("user") %}
                 <h6 class="card-header">Logged in as {{ session.get("name") }}!</h6>
             {% else %}
@@ -35,7 +36,7 @@
                 </div>
                 <br>
                 <hr>
-                <h5>Required</h5>
+                <b>Required</b>
                 <br>
                 <label for="titleInput" class="form-label">Title of Post:</label>
                 <input type="text"
@@ -61,7 +62,7 @@
                            required>
                 {% endif %}
                 <hr>
-                <h5>Optional</h5>
+                <b>Optional</b>
                 <br>
                 <label for="descriptionInput" class="form-label">Description of Item:</label>
                 <input type="text"
