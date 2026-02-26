@@ -372,7 +372,8 @@ def request_item(id):
                 f"""
                 Dear user,
 
-                Your post of id {id} titled {op[0][0]} had gotten a request from {requester[0][0]} at {requester[0][1]}.
+                Your post of id {id} titled "{op[0][0]}" had gotten a request from {requester[0][0]} at {requester[0][1]}.
+                It comes with a message "{message}"
                 To confirm please go to "Request For You" on the Viking Recovery Portal Page.
 
                 Best Wishes,
@@ -740,8 +741,12 @@ def approve_request(id):
     try:
         run_sql("UPDATE requests SET status = 'approved' WHERE id = ?", (id,))
     except:
-        return alert("Failed to update", "/manage_requests", 500)
-    return alert("Successfully approved request!", "/manage_requests")
+        if session.get("role") == "admin":
+            return alert("Failed to update", "/manage_requests", 500)
+        return alert("Failed to update", "/", 500)
+    if session.get("role") == "admin":
+        return alert("Successfully approved request!", "/manage_requests")
+    return alert("Successfully approved request!", "/")
 
 
 # Reject request
