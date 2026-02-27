@@ -103,6 +103,9 @@ span {
     .card {
         width: 300px;
     }
+    .card-form {
+        width: 330px;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
