@@ -5,6 +5,17 @@
         <div class="card m-2">
             <div class="card-body">
                 <ul class="list-group list-group-flush">
+                    {% if user_specific == "true" %}
+                        <li class="list-group-item">
+                            <h5 class="card-header text-capitalize {% if item['approved'] == 0 %} bg-secondary {% else %} bg-success {% endif %}">
+                                {% if item["approved"] == 0 %}
+                                    <em>pending</em>
+                                {% else %}
+                                    approved
+                                {% endif %}
+                            </h5>
+                        </li>
+                    {% endif %}
                     <li class="list-group-item">
                         <h5 class="card-header text-capitalize {% if item['status'] == 'lost' %} bg-warning {% elif item['status'] == 'found' %} bg-info {% else %} bg-light {% endif %}">
                             {{ item["status"] }}

@@ -3,7 +3,7 @@
 {% block main %}
     <div class="card-form card mx-auto d-flex align-items-center">
         <div class="card-body">
-            <h3 id = "card-quote">Lost something? Let's bring it back home!</h3>
+            <h3 id="card-quote">Lost something? Let's bring it back home!</h3>
             {% if session.get("user") %}
                 <h6 class="card-header">Logged in as {{ session.get("name") }}!</h6>
             {% else %}

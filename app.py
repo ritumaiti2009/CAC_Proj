@@ -280,7 +280,6 @@ def items():
             FROM items 
             LEFT JOIN requests
             ON items.id = requests.item_id
-            WHERE items.approved = true
             """
 
     params = []
@@ -288,8 +287,10 @@ def items():
     # Check if is checking user's specific items
     user_specific = request.args.get("user_specific") or "false"
     if request.args.get("user_specific") == "true":
-        query += " AND items.user_id = ?"
+        query += " WHERE items.user_id = ?"
         params.append(session.get("user_id"))
+    else:
+        query += " WHERE items.approved = true"
 
     # Search up specific posts
     if request.method == "POST":
@@ -365,7 +366,7 @@ def request_item(id):
                 """,
                 (user_id,),
             )
-            
+
             send_email(
                 app,
                 "Confirm Request",
@@ -379,7 +380,7 @@ def request_item(id):
                 Best Wishes,
                 Kevin from VRP
                 """,
-                (op[0][1])
+                (op[0][1]),
             )
 
             return alert(

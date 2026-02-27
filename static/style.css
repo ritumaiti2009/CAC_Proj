@@ -17,7 +17,12 @@ body {
 
 
 .card {
-    width: 300px;
+    width: 23%;
+}
+
+
+.card-block {
+    padding: 0;
 }
 
 
@@ -115,12 +120,27 @@ span {
     display: inline-block;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 950px) {
     .card {
+        width: 40%;
+    }
+    .card-form {
         width: 400px;
+    }
+    .card-block {
+        margin-left: 13%;
+    }
+}
+
+@media (max-width: 670px) {
+    .card {
+        width: 70%;
     }
     .card-form {
         width: 330px;
+    }
+    .card-block {
+        justify-content: center;
     }
 }
 

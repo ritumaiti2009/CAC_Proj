@@ -47,8 +47,8 @@
                     <div class="collapse navbar-collapse" id="navbarContent">
                         <div class="navbar-nav d-flex align-items-center">
                             {% if session.get("user") and session.get("role") == "admin" %}
-                                <a class="nav-link" href="/manage_requests">Manage Requests</a>
-                                <a class="nav-link" href="/manage_items">Manage Items</a>
+                                <a class="nav-link" href="/manage_requests">Manage Requests 📋</a>
+                                <a class="nav-link" href="/manage_items">Manage Items 💼</a>
                             {% endif %}
                             <a class="nav-link" href="/items">Items 🔍</a>
                             {% if session.get("user") %}
