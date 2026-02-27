@@ -127,9 +127,6 @@ span {
     .card-form {
         width: 400px;
     }
-    .card-block {
-        margin-left: 13%;
-    }
 }
 
 @media (max-width: 670px) {

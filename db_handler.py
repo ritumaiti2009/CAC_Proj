@@ -52,8 +52,8 @@ def init_db():
               email TEXT NOT NULL,
               name TEXT NOT NULL,
               title TEXT NOT NULL,
-              description TEXT,
-              image_path TEXT,
+              description TEXT DEFAULT NULL,
+              image_path TEXT DEFAULT NULL,
               date_reported DATETIME DEFAULT CURRENT_TIMESTAMP,
               status TEXT NOT NULL DEFAULT 'lost',
               approved BOOLEAN NOT NULL DEFAULT false

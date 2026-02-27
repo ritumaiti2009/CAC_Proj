@@ -34,6 +34,9 @@
                             <h5 class="card-text">Contact Info:</h5>
                             <h5 class="card-text">{{ request["email"] }}</h5>
                             <h5 class="card-text">{{ request["name"] }}</h5>
+                            {% if request["phone_num"] %}
+                                <h5 class="card-text">{{ request["phone_num"] }}</h5>
+                            {% endif %}
                         </li>
                     {% endif %}
                     {% if for_user %}
@@ -55,3 +58,4 @@
         </div>
     {% endfor %}
 {% endblock %}
+{% block address %}{% if for_user == True %}requests_for{% else %}requests{% endif %}?limit={{ requests|length + 12 }}{% endblock %}

@@ -5,7 +5,7 @@
         <div class="card m-2">
             <div class="card-body">
                 <ul class="list-group list-group-flush">
-                    {% if user_specific == "true" %}
+                    {% if user_specific == 1 %}
                         <li class="list-group-item">
                             <h5 class="card-header text-capitalize {% if item['approved'] == 0 %} bg-secondary {% else %} bg-success {% endif %}">
                                 {% if item["approved"] == 0 %}
@@ -66,7 +66,7 @@
                             </form>
                         {% endif %}
                     </li>
-                    {% if user_specific == "true" and session.get("user_id") %}
+                    {% if user_specific == 1 and session.get("user_id") %}
                         <li class="list-group-item d-flex gap-2">
                             {% if item["status"] != 'resolved' %}
                                 <form method="post" action="{{ url_for('resolve_item', id=item['id']) }}">
@@ -118,3 +118,4 @@
         </div>
     {% endfor %}
 {% endblock %}
+{% block address %}items{% if user_specific == 1 %}?user_specific=true{% endif %}?limit={{ items|length + 12 }}{% endblock %}

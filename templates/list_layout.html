@@ -24,6 +24,7 @@
     <div class="d-flex flex-wrap card-block">
         {% block card %}{% endblock %}
     </div>
+    <a href="/{% block address %}{% endblock %}" class="ms-auto me-5"><button class="btn btn-outline-primary" id="load" type="button">Load More</button></a>
     <script>
         // Activate tooltips
         document.addEventListener('DOMContentLoaded', function () {

@@ -233,7 +233,6 @@ def submit():
         user_id = session.get("user_id")
         email = session.get("user")
         name = session.get("name")
-
     else:
         # Get user info from form
         user_id = None
@@ -276,21 +275,28 @@ def items():
             datetime(items.date_reported, 'localtime') AS date_reported,
             items.user_id AS poster_user_id,
             items.status AS status,
+            items.approved AS approved,
             requests.user_id AS requester_user_id 
             FROM items 
             LEFT JOIN requests
             ON items.id = requests.item_id
             """
 
+    order_query = "ORDER BY items.date_reported DESC LIMIT ?"
+
     params = []
 
     # Check if is checking user's specific items
-    user_specific = request.args.get("user_specific") or "false"
-    if request.args.get("user_specific") == "true":
+    user_specific = request.args.get("user_specific", type=int) or 0
+    if user_specific == 1:
         query += " WHERE items.user_id = ?"
         params.append(session.get("user_id"))
     else:
         query += " WHERE items.approved = true"
+
+    # Get limit per pages
+    limit = request.args.get("limit", 12, type=int)
+    params.append(limit)
 
     # Search up specific posts
     if request.method == "POST":
@@ -308,7 +314,7 @@ def items():
                 f"""
                     {query}
                       AND (items.title LIKE ? OR items.description LIKE ?) AND items.status LIKE ?
-                      ORDER BY items.date_reported DESC
+                      {order_query}
                       """,
                 (params),
             )
@@ -318,12 +324,12 @@ def items():
         try:
             if request.args.get("user_specific") == "true":
                 items_list = run_sql(
-                    f"{query} ORDER BY items.date_reported DESC", (params)
+                    f"{query} {order_query}", (params)
                 )
             else:
-                items_list = run_sql(f"{query} ORDER BY items.date_reported DESC")
-        except:
-            return alert("Failed to fetch items", "/", 500)
+                items_list = run_sql(f"{query} {order_query}", (params))
+        except Exception as e:
+            return alert(f"Failed to fetch items {e}", "/", 500)
 
     return render_template("items.html", items=items_list, user_specific=user_specific)
 
@@ -408,19 +414,20 @@ def requests():
                 """
 
     header_extra_query = """
-                items.email AS email,
-                items.name AS name
+                users.email AS email,
+                items.name AS name,
+                users.phone_num AS phone_num
                 """
 
-    tail_approved_query = """
-                FROM requests
-                INNER JOIN items ON requests.item_id = items.id
+    tail_query = "FROM requests INNER JOIN items ON requests.item_id = items.id INNER JOIN users ON requests.user_id = users.id"
+
+    tail_approved_query = f"""
+                {tail_query}
                 WHERE requests.status = 'approved' AND requests.user_id = ?
                 """
 
-    tail_unapproved_query = """
-                FROM requests
-                INNER JOIN items ON requests.item_id = items.id
+    tail_unapproved_query = f"""
+                {tail_query}
                 WHERE requests.status != 'approved' AND requests.user_id = ?
                 """
 
@@ -429,7 +436,10 @@ def requests():
                 items.title LIKE ? OR items.description LIKE ?) AND items.status LIKE ?
                 """
 
-    date_order_query = "ORDER BY requests.date_requested DESC"
+    order_query = "ORDER BY requests.date_requested DESC LIMIT ?"
+
+    # Get limit per pages
+    limit = request.args.get("limit", 12, type=int)
 
     # Search up specific posts
     if request.method == "POST":
@@ -445,7 +455,7 @@ def requests():
                       {header_extra_query}
                       {tail_approved_query}
                       {tail_search_query}
-                      {date_order_query}
+                      {order_query}
                       """,
                 (
                     session.get("user_id"),
@@ -453,6 +463,7 @@ def requests():
                     f"%{keyword}%",
                     f"%{keyword}%",
                     f"%{status}%",
+                    limit
                 ),
             )
 
@@ -463,7 +474,7 @@ def requests():
                         {header_query}
                         {tail_unapproved_query}
                         {tail_search_query}
-                        {date_order_query}
+                        {order_query}
                         """,
                     (
                         session.get("user_id"),
@@ -471,6 +482,7 @@ def requests():
                         f"%{keyword}%",
                         f"%{keyword}%",
                         f"%{status}%",
+                        limit
                     ),
                 )
             )
@@ -484,9 +496,9 @@ def requests():
                       {header_query},
                       {header_extra_query}
                       {tail_approved_query}
-                      {date_order_query}
+                      {order_query}
                       """,
-                (session.get("user_id"),),
+                (session.get("user_id"), limit),
             )
 
             # Get all non-approved requests with contact info
@@ -495,9 +507,9 @@ def requests():
                     f"""
                         {header_query}
                         {tail_unapproved_query}
-                        {date_order_query}
+                        {order_query}
                         """,
-                    (session.get("user_id"),),
+                    (session.get("user_id"), limit),
                 )
             )
         except:
@@ -523,7 +535,8 @@ def requests_for():
                 users.email AS email,
                 COALESCE(users.preferred_name, 
                 CONCAT(users.first_name, ' ', users.last_name)) 
-                AS name
+                AS name,
+                users.phone_num AS phone_num
                 """
 
     tail_query = """
@@ -539,7 +552,10 @@ def requests_for():
                 AND items.status LIKE ?
                 """
 
-    date_order_query = "ORDER BY requests.date_requested DESC"
+    date_order_query = "ORDER BY requests.date_requested DESC LIMIT ?"
+
+    # Get limit per pages
+    limit = request.args.get("limit", 12, type=int)
 
     # Search up specific posts
     if request.method == "POST":
@@ -562,6 +578,7 @@ def requests_for():
                     f"%{keyword}%",
                     f"%{keyword}%",
                     f"%{status}%",
+                    limit
                 ),
             )
         except:
@@ -575,7 +592,7 @@ def requests_for():
                       {tail_query}
                       {date_order_query}
                       """,
-                (session.get("user_id"),),
+                (session.get("user_id"), limit),
             )
         except:
             return alert("Failed to fetch requests", "/", 500)
@@ -594,6 +611,11 @@ def manage_items():
                 datetime(date_reported, 'localtime') AS date_reported
                 FROM items
                 """
+    
+    order_query = "ORDER BY items.date_reported DESC LIMIT ?"
+    
+    # Get limit per pages
+    limit = request.args.get("limit", 12, type=int)
 
     # Allow searching
     if request.method == "POST":
@@ -606,15 +628,15 @@ def manage_items():
                 f"""
                       {query}
                       WHERE (title LIKE ? OR description LIKE ?) AND status LIKE ?
-                      ORDER BY items.date_reported DESC
+                      {order_query}
                       """,
-                (f"%{keyword}%", f"%{keyword}%", f"%{status}%"),
+                (f"%{keyword}%", f"%{keyword}%", f"%{status}%", limit),
             )
         except Exception as e:
             return alert("Failed to fetch items", "/", 500)
     else:
         try:
-            items_list = run_sql(f"{query} ORDER BY items.date_reported DESC")
+            items_list = run_sql(f"{query} {order_query}", (limit,))
         except:
             return alert("Failed to fetch items", "/", 500)
 
@@ -699,6 +721,7 @@ def manage_requests():
                     COALESCE(users.preferred_name, 
                     CONCAT(users.first_name, ' ', users.last_name)) 
                     AS user_name,
+                    users.phone_num AS user_phone_num,
                     requests.message AS message,
                     datetime(requests.date_requested, 'localtime') AS date_requested,
                     requests.image_path AS image_path,
@@ -707,6 +730,12 @@ def manage_requests():
                     INNER JOIN items ON requests.item_id = items.id
                     INNER JOIN users ON requests.user_id = users.id
                     """
+    
+    order_query = "ORDER BY requests.date_requested DESC LIMIT ?"
+    
+    # Get limit per pages
+    limit = request.args.get("limit", 12, type=int)
+
     # Allow searching
     if request.method == "POST":
         # Get keyword for querying
@@ -720,15 +749,15 @@ def manage_requests():
                     WHERE (requests.message LIKE ? OR 
                     items.title LIKE ? OR items.description LIKE ?)
                     AND items.status LIKE ?
-                    ORDER BY requests.date_requested DESC
+                    {order_query}
                     """,
-                (f"%{keyword}%", f"%{keyword}%", f"%{keyword}%", f"%{status}%"),
+                (f"%{keyword}%", f"%{keyword}%", f"%{keyword}%", f"%{status}%", limit),
             )
         except:
             return alert("Failed to fetch requests", "/", 500)
     else:
         try:
-            request_list = run_sql(f"{query} ORDER BY requests.date_requested DESC")
+            request_list = run_sql(f"{query} {order_query}", (limit,))
         except:
             return alert("Failed to fetch requests", "/", 500)
 
