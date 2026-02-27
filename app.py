@@ -767,3 +767,5 @@ def reject_request(id):
 if __name__ == "__main__":
     init_db()
     app.run(debug=True, port=8000)
+    # Bellow is the code to host a server to run on local devices
+    # app.run(host="0.0.0.0", port=8000, debug=True)
