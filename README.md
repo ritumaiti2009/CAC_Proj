@@ -35,8 +35,9 @@ This website solves the real world senario of students requiring to physically c
 2. Open using Visual Code Studio or similar IDE
 3. Create a Virtual Environment
 4. Install dependencies from requirements.txt
-5. Activate Virtual Environment
-6. Run app.py using 'python app.py'
+5. Create a .env file with 'MAIL_USERNAME' (an email) and 'MAIL_PASSWORD' (an APP password); this is to send an email.
+6. Activate Virtual Environment
+7. Run app.py using 'python app.py'
 
 **Credits**
 * Third-party technologies
