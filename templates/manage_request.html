@@ -19,21 +19,22 @@
                         <h5 class="card-subtitle mb-2 text-body-secondary">{{ request["date_requested"] }}</h5>
                     </li>
                     <li class="list-group-item">
-                        <h4 class="card-title">{{ request["title"] }}</h4>
-                    </li>
-                    <li class="list-group-item">
-                        <h5 class="card-text">Original Poster:</h5>
-                        <h5 class="card-text">{{ request["poster_email"] }}</h5>
-                        <h5 class="card-text">{{ request["poster_name"] }}</h5>
-                        {% if request["user_phone_num"] %}<h5 class="card-text">{{ request["user_phone_num"] }}</h5>{% endif %}
+                        <h5 class="card-text">Poster:</h5>
+                        <h6 class="card-text">{{ request["poster_email"] }}</h6>
+                        <h6 class="card-text">{{ request["poster_name"] }}</h6>
+                        {% if request["user_phone_num"] %}<h6 class="card-text">{{ request["user_phone_num"] }}</h6>{% endif %}
                     </li>
                     <li class="list-group-item">
                         <h5 class="card-text">Requester:</h5>
-                        <h5 class="card-text">{{ request["user_email"] }}</h5>
-                        <h5 class="card-text">{{ request["user_name"] }}</h5>
+                        <h6 class="card-text">{{ request["user_email"] }}</h6>
+                        <h6 class="card-text">{{ request["user_name"] }}</h6>
                     </li>
                     <li class="list-group-item">
-                        <p class="card-text">{{ request["message"] }}</p>
+                        <h4 class="card-title fw-bold">{{ request["title"] }}</h4>
+                    </li>
+                    <li class="list-group-item">
+                        <h5 class="card-text">Message: </h5>
+                        <h6 class="card-text">{{ request["message"] }}</h6>
                     </li>
                     {% if request["image_path"] %}
                         <li class="list-group-item">

@@ -47,7 +47,8 @@ This website solves the real world senario of students requiring to physically c
     * Djlint – MIT License
     * Bootstrap – MIT License
 * Visuals
-    * "Logo.png" (Village Vikings Logo) – Copyrighted @ 2026 The Village School. Used under Fair Use for educational and non-commercial purposes.
+    * "Logo.png" (Village Vikings Logo) – Copyrighted @ 2019 The Village School. Used under Fair Use for educational and non-commercial purposes.
+    * Homepage Background (The Village School Top View) – Copyrighted @ 2023 The Village School. Used under Fair Use for educational and non-commercial purposes.
     * Emojis – Copyrighted @ 2026 Apple Inc. Used under Fair Use for educational and non-commercial purposes.
     * Embedded Google Map View – Copyrighted @ 2026 Alphabet Inc. Used under Fair Use for educational and non-commercial purposes.
     * Atkinson Hyperlegible Font – SIL Open Font License

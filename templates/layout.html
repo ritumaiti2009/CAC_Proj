@@ -21,7 +21,7 @@
               integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
               crossorigin="anonymous" />
     </head>
-    <body>
+    <body class="{% if request.path == '/' %}home-body{% endif %}">
         <nav class="navbar sticky-top navbar-expand-lg">
             <div class="container-fluid">
                 <h2>
