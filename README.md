@@ -44,6 +44,7 @@ This website solves the real world senario of students requiring to physically c
     * Other Flask and Python Libraries - All are distributed under permissive open-source licenses (primarily MIT, BSD, or Apache 2.0).
     * Black – MIT License
     * Djlint – MIT License
+    * Bootstrap – MIT License
 * Visuals
     * "Logo.png" (Village Vikings Logo) – Copyrighted @ 2026 The Village School. Used under Fair Use for educational and non-commercial purposes.
     * Emojis – Copyrighted @ 2026 Apple Inc. Used under Fair Use for educational and non-commercial purposes.
