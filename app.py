@@ -296,7 +296,6 @@ def items():
 
     # Get limit per pages
     limit = request.args.get("limit", 12, type=int)
-    params.append(limit)
 
     # Search up specific posts
     if request.method == "POST":
@@ -310,6 +309,9 @@ def items():
                 params.append(f"%{keyword}%")
             params.append(f"%{status}%")
 
+            # Append limit
+            params.append(limit)
+
             items_list = run_sql(
                 f"""
                     {query}
@@ -318,9 +320,12 @@ def items():
                       """,
                 (params),
             )
-        except:
-            return alert("Failed to fetch items", "/", 500)
+        except Exception as e:
+            return alert(f"Failed to fetch items{e}", "/", 500)
     else:
+        # Append limit
+        params.append(limit)
+        
         try:
             if request.args.get("user_specific") == "true":
                 items_list = run_sql(

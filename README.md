@@ -37,3 +37,15 @@ This website solves the real world senario of students requiring to physically c
 4. Install dependencies from requirements.txt
 5. Activate Virtual Environment
 6. Run app.py using 'python app.py'
+
+**Credits**
+* Third-party technologies
+    * Flask - BSD-3-Clause License
+    * Other Flask and Python Libraries - All are distributed under permissive open-source licenses (primarily MIT, BSD, or Apache 2.0).
+    * Black – MIT License
+    * Djlint – MIT License
+* Visuals
+    * "Logo.png" (Village Vikings Logo) – Copyrighted @ 2026 The Village School. Used under Fair Use for educational and non-commercial purposes.
+    * Emojis – Copyrighted @ 2026 Apple Inc. Used under Fair Use for educational and non-commercial purposes.
+    * Embedded Google Map View – Copyrighted @ 2026 Alphabet Inc. Used under Fair Use for educational and non-commercial purposes.
+    * Atkinson Hyperlegible Font – SIL Open Font License

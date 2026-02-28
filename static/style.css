@@ -23,6 +23,7 @@ body {
 
 .card-block {
     padding: 0;
+    margin: 5%;
 }
 
 
@@ -46,6 +47,23 @@ body {
     text-align: center;
 }
 
+.contacts {
+    color: white;
+}
+
+.footer {
+    display: flex;
+    justify-content: space-around;
+    padding: 32%;
+    height: 200px;
+    background-color: #041737;
+}
+
+.footer-box {
+    width: 0;
+    height: auto;
+    padding: 0px;
+}
 
 .navbar {
     background-color: rgb(255, 255, 255); 

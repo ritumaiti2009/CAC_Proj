@@ -118,4 +118,8 @@
         </div>
     {% endfor %}
 {% endblock %}
-{% block address %}items{% if user_specific == 1 %}?user_specific=true{% endif %}?limit={{ items|length + 12 }}{% endblock %}
+{% block load %}
+    {% if (items|length + 24) % 12 == 0%}
+        <a href="/items{% if user_specific == 1 %}?user_specific=true{% endif %}?limit={{ items|length + 12 }}" class="ms-auto me-5 mb-5"><button class="btn btn-secondary" id="load" type="button">Load More</button></a>
+    {% endif %}
+{% endblock %}

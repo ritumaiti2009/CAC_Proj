@@ -63,4 +63,8 @@
         </div>
     {% endfor %}
 {% endblock %}
-{% block address %}manage_requests?limit={{ requests|length + 12 }}{% endblock %}
+{% block load %}
+    {% if (requests|length + 24) % 12 == 0%}
+        <a href="/manage_requests?limit={{ requests|length + 12 }}" class="ms-auto me-5 mb-5"><button class="btn btn-secondary" id="load" type="button">Load More</button></a>
+    {% endif %}
+{% endblock %}
