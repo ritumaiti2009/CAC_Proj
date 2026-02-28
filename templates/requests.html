@@ -34,9 +34,7 @@
                             <h5 class="card-text">Contact Info:</h5>
                             <h5 class="card-text">{{ request["email"] }}</h5>
                             <h5 class="card-text">{{ request["name"] }}</h5>
-                            {% if request["phone_num"] %}
-                                <h5 class="card-text">{{ request["phone_num"] }}</h5>
-                            {% endif %}
+                            {% if request["phone_num"] %}<h5 class="card-text">{{ request["phone_num"] }}</h5>{% endif %}
                         </li>
                     {% endif %}
                     {% if for_user %}
@@ -59,7 +57,10 @@
     {% endfor %}
 {% endblock %}
 {% block load %}
-    {% if (requests|length + 24) % 12 == 0%}
-        <a href="/{% if for_user == True %}requests_for{% else %}requests{% endif %}?limit={{ requests|length + 12 }}" class="ms-auto me-5 mb-5"><button class="btn btn-secondary" id="load" type="button">Load More</button></a>
+    {% if (requests|length + 24) % 12 == 0 %}
+        <a href="/{% if for_user == True %}requests_for{% else %}requests{% endif %}?limit={{ requests|length + 12 }}"
+           class="ms-auto me-5 mb-5">
+            <button class="btn btn-secondary" id="load" type="button">Load More</button>
+        </a>
     {% endif %}
 {% endblock %}

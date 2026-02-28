@@ -325,12 +325,10 @@ def items():
     else:
         # Append limit
         params.append(limit)
-        
+
         try:
             if request.args.get("user_specific") == "true":
-                items_list = run_sql(
-                    f"{query} {order_query}", (params)
-                )
+                items_list = run_sql(f"{query} {order_query}", (params))
             else:
                 items_list = run_sql(f"{query} {order_query}", (params))
         except Exception as e:
@@ -468,7 +466,7 @@ def requests():
                     f"%{keyword}%",
                     f"%{keyword}%",
                     f"%{status}%",
-                    limit
+                    limit,
                 ),
             )
 
@@ -487,7 +485,7 @@ def requests():
                         f"%{keyword}%",
                         f"%{keyword}%",
                         f"%{status}%",
-                        limit
+                        limit,
                     ),
                 )
             )
@@ -583,7 +581,7 @@ def requests_for():
                     f"%{keyword}%",
                     f"%{keyword}%",
                     f"%{status}%",
-                    limit
+                    limit,
                 ),
             )
         except:
@@ -616,9 +614,9 @@ def manage_items():
                 datetime(date_reported, 'localtime') AS date_reported
                 FROM items
                 """
-    
+
     order_query = "ORDER BY items.date_reported DESC LIMIT ?"
-    
+
     # Get limit per pages
     limit = request.args.get("limit", 12, type=int)
 
@@ -735,9 +733,9 @@ def manage_requests():
                     INNER JOIN items ON requests.item_id = items.id
                     INNER JOIN users ON requests.user_id = users.id
                     """
-    
+
     order_query = "ORDER BY requests.date_requested DESC LIMIT ?"
-    
+
     # Get limit per pages
     limit = request.args.get("limit", 12, type=int)
 

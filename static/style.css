@@ -111,6 +111,10 @@ input {
     font-family: 'Atkinson Hyperlegible', sans-serif;
 }
 
+iframe {
+    border: 0;
+}
+
 #submit{
     background: linear-gradient(180deg, #1E55EB 0%, #1E55EB 100%);
     border: none;

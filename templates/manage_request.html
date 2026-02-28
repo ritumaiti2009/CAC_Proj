@@ -25,9 +25,7 @@
                         <h5 class="card-text">Original Poster:</h5>
                         <h5 class="card-text">{{ request["poster_email"] }}</h5>
                         <h5 class="card-text">{{ request["poster_name"] }}</h5>
-                        {% if request["user_phone_num"] %}
-                            <h5 class="card-text">{{ request["user_phone_num"] }}</h5>
-                        {% endif %}
+                        {% if request["user_phone_num"] %}<h5 class="card-text">{{ request["user_phone_num"] }}</h5>{% endif %}
                     </li>
                     <li class="list-group-item">
                         <h5 class="card-text">Requester:</h5>
@@ -64,7 +62,10 @@
     {% endfor %}
 {% endblock %}
 {% block load %}
-    {% if (requests|length + 24) % 12 == 0%}
-        <a href="/manage_requests?limit={{ requests|length + 12 }}" class="ms-auto me-5 mb-5"><button class="btn btn-secondary" id="load" type="button">Load More</button></a>
+    {% if (requests|length + 24) % 12 == 0 %}
+        <a href="/manage_requests?limit={{ requests|length + 12 }}"
+           class="ms-auto me-5 mb-5">
+            <button class="btn btn-secondary" id="load" type="button">Load More</button>
+        </a>
     {% endif %}
 {% endblock %}
