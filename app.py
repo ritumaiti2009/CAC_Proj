@@ -797,8 +797,9 @@ def reject_request(id):
 
 
 # Check if Flask is ran directly
-if __name__ == "__main__":
+with app.app_context():
     init_db()
-    # Get port from os environment
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+
+# Get port from os environment
+port = int(os.environ.get("PORT", 10000))
+app.run(host="0.0.0.0", port=port)
