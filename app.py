@@ -11,9 +11,7 @@ from image_handler import save_image, del_image
 
 # Configure application
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY").encode(
-    "utf8"
-)  # Required for flask session security
+app.secret_key = os.environ.get("SECRET_KEY")  # Required for flask session security
 
 
 # Load .env for secured username and password of mail
