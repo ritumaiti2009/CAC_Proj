@@ -11,7 +11,7 @@ from image_handler import save_image, del_image
 
 # Configure application
 app = Flask(__name__)
-app.secret_key = "fbla_lost_and_found".encode(
+app.secret_key = os.environ.get("SECRET_KEY").encode(
     "utf8"
 )  # Required for flask session security
 
