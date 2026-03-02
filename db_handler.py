@@ -1,5 +1,7 @@
 import sqlite3
 
+from werkzeug.security import generate_password_hash
+
 # Const for database name
 DATABASE = "database.db"
 
@@ -73,5 +75,26 @@ def init_db():
     """,
     ]
 
+    # Run SQL queries
     for query in dbs_queries:
         run_sql(query)
+
+
+    # Create a default admin account
+
+    # Check for an admin account
+    admins = run_sql("SELECT count(*) FROM users WHERE role = ?", ("admin",))
+
+    if not admins:
+        # Set up admin password
+        password = generate_password_hash(
+            "111111111", method="pbkdf2:sha256"
+        )  # Set hashing style to avoid scrypt
+        
+        run_sql(
+                """
+                INSERT INTO users (email, password, first_name, last_name, phone_num, role) 
+                VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                ("admin@test.com", password, "Admin", "Admin", "+12121234567", "admin")
+            )
