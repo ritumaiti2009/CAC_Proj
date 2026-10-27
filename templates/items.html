@@ -1,0 +1,139 @@
+{% extends "list_layout.html" %}
+{% block title %}Items{% endblock %}
+{% block card %}
+    {% for item in items %}
+        <div class="card m-2">
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% if user_specific == 1 %}
+                        <li class="list-group-item">
+                            <h5 class="card-header text-capitalize {% if item['approved'] == 0 %} bg-secondary {% else %} bg-success {% endif %}">
+                                {% if item["approved"] == 0 %}
+                                    <em>pending</em>
+                                {% else %}
+                                    approved
+                                {% endif %}
+                            </h5>
+                        </li>
+                    {% endif %}
+                    <li class="list-group-item">
+                        <h5 class="card-header text-capitalize {% if item['status'] == 'good' %} bg-warning {% elif item['status'] == 'fair' %} bg-info {% else %} bg-light {% endif %}">
+                            {{ item["status"] }}
+                        </h5>
+                    </li>
+                    {% if item["image_path"] %}
+                        <li class="list-group-item">
+                            <img class="card-img-top"
+                                 src="{{ item['image_path'] }}"
+                                 alt="{{ item['title'] }}"
+                                 width="auto"
+                                 height="auto">
+                        </li>
+                    {% endif %}
+                    <li class="list-group-item">
+                        <h5 class="card-subtitle mb-2 text-body-secondary">{{ item["date_reported"] }}</h5>
+                    </li>
+                    <li class="list-group-item">
+                        <h4 class="card-title fw-bold">{{ item["title"] }}</h4>
+                    </li>
+                    {% if item["author_name"] %}
+                        <li class="list-group-item"><strong>Author:</strong> {{ item['author_name'] }}</li>
+                    {% endif %}
+                    {% if item["cost_cents"] is not none %}
+                        <li class="list-group-item"><strong>Cost:</strong> ${{ '%.2f'|format(item['cost_cents'] / 100) }}</li>
+                    {% endif %}
+                    {% if item["school_location"] %}
+                        <li class="list-group-item"><strong>School location:</strong> {{ item['school_location'] }}</li>
+                    {% endif %}
+                    {% if item["description"] %}
+                        <li class="list-group-item">
+                            <h5 class="card-text">{{ item["description"] }}</h5>
+                        </li>
+                    {% endif %}
+                    <li class="list-group-item">
+                        {% if item["status"] == 'sold' %}
+                            <button class="btn btn-outline-secondary" type="button" disabled>Sold</button>
+                        {% elif not session.get("user_id") %}
+                            <span data-bs-toggle="tooltip"
+                                  data-bs-placement="bottom"
+                                  title="Must login to send requests">
+                                <button class="btn btn-outline-secondary" type="button" disabled>Request Info</button>
+                            </span>
+                        {% elif session.get("user_id") == item["poster_user_id"] %}
+                            <span data-bs-toggle="tooltip"
+                                  data-bs-placement="bottom"
+                                  title="Can't request from yourself">
+                                <button class="btn btn-outline-secondary" type="button" disabled>Request Info</button>
+                            </span>
+                        {% elif session.get("user") == item["requester_user_id"] %}
+                            <span data-bs-toggle="tooltip"
+                                  data-bs-placement="bottom"
+                                  title="Only 1 request can be sent for this item">
+                                <button class="btn btn-outline-secondary" type="button" disabled>Request Info</button>
+                            </span>
+                        {% else %}
+                            <form method="get" action="{{ url_for('request_item', id=item['id']) }}">
+                                <button class="btn btn-outline-primary" type="submit">Request Info</button>
+                            </form>
+                        {% endif %}
+                    </li>
+                    {% if user_specific == 1 and session.get("user_id") %}
+                        <li class="list-group-item d-flex gap-2">
+                            {% if item["status"] != 'sold' %}
+                                <form method="post" action="{{ url_for('sell_item', id=item['id']) }}">
+                                    <button class="btn btn-outline-dark" type="submit" id="sellBtn">Mark as Sold</button>
+                                </form>
+                            {% endif %}
+                            <form method="post" action="{{ url_for('delete_item', id=item['id']) }}">
+                                <span data-bs-toggle="tooltip"
+                                      data-bs-placement="bottom"
+                                      title="Delete permanently">
+                                    <button class="btn btn-outline-danger"
+                                            type="button"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#confirmDeleteModal{{ item['id'] }}"
+                                            id="deleteBtn">Delete</button>
+                                </span>
+                                <div class="modal fade"
+                                     id="confirmDeleteModal{{ item['id'] }}"
+                                     data-bs-backdrop="static"
+                                     data-bs-keyboard="false"
+                                     tabindex="-1"
+                                     aria-labelledby="confirmDeleteModal{{ item['id'] }}"
+                                     aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h1 class="modal-title fs-5">Confirm Delete</h1>
+                                                <button type="button"
+                                                        class="btn-close"
+                                                        data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">Are you sure you want to delete this item? (This is permanent)</div>
+                                            <div class="modal-footer">
+                                                <button type="submit" class="btn btn-danger">Confirm Delete</button>
+                                                <button type="button"
+                                                        class="btn btn-secondary"
+                                                        data-bs-dismiss="modal"
+                                                        aria-label="Close">Close</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    {% endfor %}
+{% endblock %}
+{% block load %}
+    {% if (items|length + 12) % 12 == 0 and (requests|length) != 0 %}
+        <a href="/items{% if user_specific == 1 %}?user_specific=true{% endif %}?limit={{ items|length + 12 }}"
+           class="ms-auto me-5 mb-5">
+            <button class="btn btn-secondary" id="load" type="button">Load More</button>
+        </a>
+    {% endif %}
+{% endblock %}

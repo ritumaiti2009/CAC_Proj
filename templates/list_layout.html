@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+{% block main %}
+    <div class="m-5">
+        <form method="post" id="searchForm">
+            <div class="col-auto d-flex">
+                <input type="text"
+                       class="form-control me-2 flex-grow-1"
+                       id="searchInput"
+                       name="keyword"
+                       placeholder="Search">
+                <select class="form-select me-2 w-auto flex-shrink-0 status-box"
+                        name="status"
+                        id="select">
+                    <option selected disabled>Quality / Status</option>
+                    <option value="">All</option>
+                    <option value="good">Good</option>
+                    <option value="fair">Fair</option>
+                    <option value="sold">Sold</option>
+                </select>
+                <button class="btn btn-outline-primary" type="submit">Search</button>
+            </div>
+        </form>
+    </div>
+    <div class="d-flex flex-wrap card-block">
+        {% block card %}{% endblock %}
+    </div>
+    {% block load %}{% endblock %}
+    <script>
+        // Activate tooltips
+        document.addEventListener('DOMContentLoaded', function () {
+            const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+            tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends "layout.html" %}
+{% block title %}Account Settings{% endblock %}
+{% block main %}
+    <div class="card-form card mx-auto d-flex align-items-center py-3">
+        <div clas="card-body">
+            <form method="post" action="/setting">
+                <label for="firstNameInput" class="form-label">First Name:</label>
+                <input type="text"
+                       class="form-control"
+                       id="firstNameInput"
+                       name="first_name"
+                       placeholder="John"
+                       value="{% if user[0]['email'] %}{{ user[0]['first_name'] }}{% endif %}"
+                       required>
+                <label for="lastNameInput" class="form-label">Last Name:</label>
+                <input type="text"
+                       class="form-control"
+                       id="lastNameInput"
+                       name="last_name"
+                       placeholder="Doe"
+                       value="{% if user[0]['last_name'] %}{{ user[0]['last_name'] }}{% endif %}"
+                       required>
+                <label for="emailInput" class="form-label">Email:</label>
+                <input type="email"
+                       class="form-control"
+                       id="emailInput"
+                       name="email"
+                       placeholder="name@example.com"
+                       value="{% if user[0]['email'] %}{{ user[0]['email'] }}{% endif %}"
+                       required>
+                <label for="preferredNameInput" class="form-label">Preferred Name:</label>
+                <input type="text"
+                       class="form-control"
+                       id="preferredNameInput"
+                       name="preferred_name"
+                       placeholder="Nickname"
+                       value="{% if user[0]['preferred_name'] %}{{ user[0]['preferred_name'] }}{% endif %}">
+                <label for="telInput" class="form-label">Phone Number:</label>
+                <input type="tel"
+                       class="form-control"
+                       id="telInput"
+                       name="phone_num"
+                       pattern="^\+?[1-9]\d{9,14}$"
+                       aria-describedby="phoneInfo"
+                       placeholder="+11234567890"
+                       value="{% if user[0]['phone_num'] %}{{ user[0]['phone_num'] }}{% endif %}">
+                <p class="form-text" id="phoneInfo">Uses E.164 format</p>
+                <div class="modal fade"
+                     id="confirmPasswordModal"
+                     tabindex="-1"
+                     aria-labelledby="confirmPasswordModal"
+                     aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h1 class="modal-title fs-5">Confirm Password</h1>
+                                <button type="button"
+                                        class="btn-close"
+                                        data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                Enter your password to confirm change
+                                <input type="password"
+                                       id="passwordInput"
+                                       class="form-control"
+                                       name="password"
+                                       minlength="8"
+                                       maxlength="20"
+                                       required>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-success">Enter</button>
+                                <button type="button"
+                                        class="btn btn-secondary"
+                                        data-bs-dismiss="modal"
+                                        aria-label="Close">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <div class="d-flex m-2 align-items-end gap-4">
+                <button class="btn btn-outline-success"
+                        type="button"
+                        data-bs-toggle="modal"
+                        data-bs-target="#confirmPasswordModal"
+                        id="updateBtn">Update</button>
+            </div>
+        </div>
+    </div>
+{% endblock %}

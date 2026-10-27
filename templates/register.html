@@ -1,0 +1,73 @@
+{% extends "layout.html" %}
+{% block title %}Register{% endblock %}
+{% block nav %}{% endblock %}
+{% block main %}
+    <div class="card-form card mx-auto">
+        <div class="card-body">
+            <div class="card-header">Register</div>
+            <form method="post">
+                <h5>Required</h5>
+                <hr>
+                <label for="firstNameInput" class="form-label">First Name:</label>
+                <input type="text"
+                       class="form-control"
+                       id="firstNameInput"
+                       name="first_name"
+                       placeholder="John"
+                       required>
+                <label for="lastNameInput" class="form-label">Last Name:</label>
+                <input type="text"
+                       class="form-control"
+                       id="lastNameInput"
+                       name="last_name"
+                       placeholder="Doe"
+                       required>
+                <label for="emailInput" class="form-label">Email:</label>
+                <input type="email"
+                       class="form-control"
+                       id="emailInput"
+                       name="email"
+                       placeholder="name@example.com"
+                       required>
+                <label for="passwordInput" class="form-label">Password:</label>
+                <input type="password"
+                       id="passwordInput"
+                       class="form-control"
+                       name="password"
+                       minlength="8"
+                       maxlength="20"
+                       required>
+                <label for="passwordInput" class="form-label">Confirm Password:</label>
+                <input type="password"
+                       id="passwordInput"
+                       class="form-control"
+                       name="password_confirm"
+                       minlength="8"
+                       maxlength="20"
+                       required>
+                <hr>
+                <h5>Optional</h5>
+                <hr>
+                <label for="preferredNameInput" class="form-label">Preferred Name:</label>
+                <input type="text"
+                       class="form-control"
+                       id="preferredNameInput"
+                       name="preferred_name"
+                       placeholder="Nickname">
+                <label for="telInput" class="form-label">Phone Number:</label>
+                <input type="tel"
+                       class="form-control"
+                       id="telInput"
+                       name="phone_num"
+                       pattern="^\+?[1-9]\d{9,14}$"
+                       aria-describedby="phoneInfo"
+                       placeholder="+11234567890">
+                <p class="form-text" id="phoneInfo">Uses E.164 format</p>
+                <hr>
+                <button class="btn btn-outline-primary" id="submit" type="submit">Submit</button>
+            </form>
+            <br>
+            <a class="btn btn-outline-secondary btn-sm" href="/login">Login</a>
+        </div>
+    </div>
+{% endblock %}

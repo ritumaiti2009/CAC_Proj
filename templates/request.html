@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+{% block title %}Request Info{% endblock %}
+{% block main %}
+    <div class="card-form card mx-auto d-flex align-items-center">
+        <div class="card-body">
+            <div class="card-header">Request Contact Info</div>
+            <br>
+            <hr>
+            <form class="mb-3"
+                  method="post"
+                  action="{{ url_for('request_item', id=item_id) }}"
+                  enctype="multipart/form-data">
+                <label for="messageInput" class="form-label">Message:</label>
+                <input type="text"
+                       class="form-control"
+                       id="messageInput"
+                       name="message"
+                       placeholder="Message"
+                       required>
+                <br>
+                <label for="imageInput" class="form-label">Image (Optional):</label>
+                <input type="file"
+                       accept="image/*"
+                       class="form-control"
+                       id="imageInput"
+                       name="image">
+                <br>
+                <hr>
+                <button class="btn btn-outline-primary" id="submit" type="submit">Submit</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

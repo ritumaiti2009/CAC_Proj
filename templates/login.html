@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+{% block title %}Log In{% endblock %}
+{% block nav %}{% endblock %}
+{% block main %}
+    <div class="card-form card mx-auto">
+        <div class="card-body">
+            <div class="card-header">Login</div>
+            <form method="post">
+                <br>
+                <label for="emailInput" class="form-label">Email:</label>
+                <input type="email"
+                       class="form-control"
+                       id="emailInput"
+                       name="email"
+                       placeholder="name@example.com"
+                       required>
+                <br>
+                <hr>
+                <label for="passwordInput" class="form-label">Password:</label>
+                <input type="password"
+                       id="passwordInput"
+                       class="form-control"
+                       name="password"
+                       minlength="8"
+                       maxlength="20"
+                       required>
+                <br>
+                <hr>
+                <button class="btn btn-outline-primary" id="submit" type="submit">Submit</button>
+            </form>
+            <br>
+            <a class="btn btn-outline-secondary btn-sm" href="/register">Register</a>
+        </div>
+    </div>
+{% endblock %}
