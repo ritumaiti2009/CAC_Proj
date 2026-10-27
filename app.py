@@ -1,4 +1,5 @@
 import os
+from decimal import Decimal, InvalidOperation
 
 from flask import Flask, redirect, render_template, request, session
 from dotenv import load_dotenv
@@ -10,12 +11,10 @@ from helpers import alert, login_required, admin_required
 from image_handler import save_image, del_image
 
 # Configure application
+load_dotenv()
+
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY")  # Required for flask session security
-
-
-# Load .env for secured username and password of mail
-load_dotenv()
 
 
 # Set up config for email
@@ -238,7 +237,22 @@ def submit():
         name = request.form["name"]
 
     # Get submission from form
-    status = request.form["type"]
+    author_name = request.form.get('author_name', '').strip()
+    if len(author_name) > 200:
+        return alert('Author name must be 200 characters or fewer.', '/', 400)
+    try:
+        cost = Decimal(request.form.get('cost', ''))
+        if not cost.is_finite() or cost < 0 or cost > Decimal('9999999.99') or cost != cost.quantize(Decimal('0.01')):
+            raise ValueError
+        cost_cents = int(cost * 100)
+    except (InvalidOperation, ValueError):
+        return alert('Enter a valid cost with up to two decimal places.', '/', 400)
+    school_location = request.form.get('school_location', '').strip()
+    if not school_location or len(school_location) > 500:
+        return alert('Enter a school location (up to 500 characters).', '/', 400)
+    status = request.form.get("type")
+    if status not in {"good", "fair"}:
+        return alert("Choose Good or Fair for item quality.", "/", 400)
     title = request.form["title"]
     description = request.form["description"] or None
     image = request.files.get("image")
@@ -250,10 +264,10 @@ def submit():
     try:
         run_sql(
             """
-            INSERT INTO items (user_id, email, name, title, description, image_path, status) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO items (user_id, email, name, title, description, image_path, status, cost_cents, school_location, author_name)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (user_id, email, name, title, description, filepath, status),
+            (user_id, email, name, title, description, filepath, status, cost_cents, school_location, author_name or None),
         )
         return alert("Report successfully submitted! (Must wait for approval)", "/")
     except:
@@ -269,6 +283,9 @@ def items():
             items.id AS id, 
             items.title AS title, 
             items.description AS description, 
+            items.cost_cents AS cost_cents,
+            items.school_location AS school_location,
+            items.author_name AS author_name,
             items.image_path AS image_path, 
             datetime(items.date_reported, 'localtime') AS date_reported,
             items.user_id AS poster_user_id,
@@ -299,7 +316,7 @@ def items():
     if request.method == "POST":
         # Get keyword for querying
         keyword = request.form["keyword"]
-        status = request.form.get("status") or "o"
+        status = request.form.get("status") or ""
 
         try:
             # Add search request to params
@@ -339,6 +356,9 @@ def items():
 @app.route("/request/<int:id>", methods=["GET", "POST"])
 @login_required
 def request_item(id):
+    item = run_sql("SELECT status FROM items WHERE id = ?", (id,))
+    if not item or item[0]["status"] == "sold":
+        return alert("This item is unavailable.", "/items", 400)
     # Sends request
     if request.method == "POST":
         # Get user info from session
@@ -446,7 +466,7 @@ def requests():
     if request.method == "POST":
         # Get keyword for querying
         keyword = request.form["keyword"]
-        status = request.form.get("status") or "o"
+        status = request.form.get("status") or ""
 
         try:
             # Get all approved requests with contact info
@@ -562,7 +582,7 @@ def requests_for():
     if request.method == "POST":
         # Get keyword for querying
         keyword = request.form["keyword"]
-        status = request.form.get("status") or "o"
+        status = request.form.get("status") or ""
 
         try:
             # Get all approved requests with contact info
@@ -622,7 +642,7 @@ def manage_items():
     if request.method == "POST":
         # Get keyword for querying
         keyword = request.form["keyword"]
-        status = request.form.get("status") or "o"
+        status = request.form.get("status") or ""
 
         try:
             items_list = run_sql(
@@ -662,6 +682,8 @@ def approve_item(id):
 def delete_item(id):
     # Checking if user_id matches or they're an Admin
     user_id = run_sql("SELECT user_id FROM items WHERE id = ?", (id,))
+    if not user_id:
+        return alert("Item not found.", "/", 404)
     if session.get("role") == "admin" or user_id[0][0] == session.get("user_id"):
         try:
             # Delete image if it exists
@@ -683,16 +705,19 @@ def delete_item(id):
     return alert("Failed to delete: Unauthorized", "/", 401)
 
 
-# Handles resolving items post
+# Mark an item as sold
 @app.route("/resolve_item/<int:id>", methods=["POST"])
+@app.route("/sell_item/<int:id>", methods=["POST"])
 @login_required
-def resolve_item(id):
+def sell_item(id):
     # Checking if user_id matches or they're an Admin
     user_id = run_sql("SELECT user_id FROM items WHERE id = ?", (id,))
+    if not user_id:
+        return alert("Item not found.", "/", 404)
     if session.get("role") == "admin" or user_id[0][0] == session.get("user_id"):
         try:
             # Update entry
-            run_sql("UPDATE items SET status = 'resolved' WHERE id = ?", (id,))
+            run_sql("UPDATE items SET status = 'sold' WHERE id = ?", (id,))
         except:
             if session.get("role") == "admin":
                 return alert("Failed to update", "/manage_items", 500)
@@ -741,7 +766,7 @@ def manage_requests():
     if request.method == "POST":
         # Get keyword for querying
         keyword = request.form["keyword"]
-        status = request.form.get("status") or "o"
+        status = request.form.get("status") or ""
 
         try:
             request_list = run_sql(

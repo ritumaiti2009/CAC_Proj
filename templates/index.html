@@ -1,84 +1,68 @@
 {% extends "layout.html" %}
 {% block title %}Home{% endblock %}
 {% block main %}
-    <div class="card-form card mx-auto d-flex align-items-center">
-        <div class="card-body">
-            <h3 id="card-quote">Lost something? Let's bring it back home!</h3>
-            {% if session.get("user") %}
-                <h6 class="card-header">Logged in as {{ session.get("name") }}!</h6>
-            {% else %}
-                <h6 class="card-header">Logged in as Guest!</h6>
-            {% endif %}
-            <div class="card-header">Report an item</div>
-            <form class="mb-3"
-                  method="post"
-                  action="/submit"
-                  enctype="multipart/form-data">
-                <br>
-                <label>Item Type:</label>
-                <br>
-                <div class="btn-group" role="group">
-                    <input type="radio"
-                           class="btn-check"
-                           name="type"
-                           value="lost"
-                           id="lostRadio"
-                           autocomplete="off"
-                           checked>
-                    <label class="btn btn-outline-primary" for="lostRadio">Lost</label>
-                    <input type="radio"
-                           class="btn-check"
-                           name="type"
-                           value="found"
-                           id="foundRadio"
-                           autocomplete="off">
-                    <label class="btn btn-outline-primary" for="foundRadio">Found</label>
-                </div>
-                <br>
-                <hr>
-                <b>Required</b>
-                <br>
-                <label for="titleInput" class="form-label">Title of Post:</label>
-                <input type="text"
-                       class="form-control"
-                       id="titleInput"
-                       name="title"
-                       placeholder="Title"
-                       required>
-                {% if not session.get("user") %}
-                    <label for="emailInput" class="form-label">Your Email:</label>
-                    <input type="email"
-                           class="form-control"
-                           id="emailInput"
-                           name="email"
-                           placeholder="name@example.com"
-                           required>
-                    <label for="emailInput" class="form-label">Your Name:</label>
-                    <input type="text"
-                           class="form-control"
-                           id="nameInput"
-                           name="name"
-                           placeholder="John Doe"
-                           required>
-                {% endif %}
-                <hr>
-                <b>Optional</b>
-                <br>
-                <label for="descriptionInput" class="form-label">Description of Item:</label>
-                <input type="text"
-                       class="form-control"
-                       id="descriptionInput"
-                       name="description"
-                       placeholder="Description">
-                <label for="imageInput" class="form-label">Image:</label>
-                <input type="file"
-                       accept="image/*"
-                       class="form-control"
-                       id="imageInput"
-                       name="image">
-                <hr>
-                <button class="btn btn-outline-primary" id="submit" type="submit">Submit</button>
-            </form>
+    {% if session.get("user") %}
+        <section class="card-form card mx-auto" aria-labelledby="report-title">
+            <div class="card-body p-4">
+                <h1 class="h3" id="report-title">Sell your textbook</h1>
+                <p>Welcome back, {{ session.get("name") }}!</p>
+                <form method="post" action="{{ url_for('submit') }}" enctype="multipart/form-data">
+                    <fieldset class="mb-3">
+                        <legend class="fs-6">Quality</legend>
+                        <div class="btn-group">
+                            <input type="radio" class="btn-check" name="type" value="good" id="goodRadio" checked>
+                            <label class="btn btn-outline-primary" for="goodRadio">Good</label>
+                            <input type="radio" class="btn-check" name="type" value="fair" id="fairRadio">
+                            <label class="btn btn-outline-primary" for="fairRadio">Fair</label>
+                        </div>
+                    </fieldset>
+                    <div class="mb-3">
+                        <label for="titleInput" class="form-label">Title of Post (required)</label>
+                        <input type="text" class="form-control" id="titleInput" name="title" placeholder="Title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="authorInput" class="form-label">Author Name (optional)</label>
+                        <input type="text" class="form-control" id="authorInput" name="author_name" maxlength="200" placeholder="Textbook author's name">
+                    </div>
+                    <div class="mb-3">
+                        <label for="costInput" class="form-label">Cost (USD, required)</label>
+                        <input type="number" class="form-control" id="costInput" name="cost" min="0" max="9999999.99" step="0.01" placeholder="0.00" required>
+                        <div class="form-text">Enter 0 for a free item.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="schoolLocation" class="form-label">School location (required)</label>
+                        <input type="search" class="form-control" id="schoolLocation" name="school_location" maxlength="500" placeholder="Search school name or address" autocomplete="off" aria-describedby="locationHelp" required>
+                        <div id="locationResults" class="list-group mt-2" aria-label="School address suggestions"></div>
+                        <div id="locationHelp" class="form-text" role="status">Type at least 3 characters for address suggestions, or enter an address manually.</div>
+                        <small>Address search by Photon · © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a></small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="descriptionInput" class="form-label">Description of Item (optional)</label>
+                        <textarea class="form-control" id="descriptionInput" name="description" rows="3" placeholder="Description"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="imageInput" class="form-label">Image (optional)</label>
+                        <input type="file" accept="image/*" class="form-control" id="imageInput" name="image">
+                    </div>
+                    <button class="btn btn-outline-primary" id="submit" type="submit">Submit</button>
+                </form>
+            </div>
+        </section>
+        <script src="{{ url_for('static', filename='school-location.js') }}" defer></script>
+    {% else %}
+    <section class="card-form card mx-auto text-center" aria-labelledby="welcome-title">
+        <div class="card-body p-4">
+            <h1 class="h3 mb-3" id="welcome-title">Welcome to Textora</h1>
+            <p id="card-quote">Give your textbook its next chapter</p>
+            <p class="mb-4">
+                 A place where students can buy and sell textbooks and connect with students in their area.
+            </p>
+            <div class="d-flex flex-wrap justify-content-center gap-2">
+                <a class="btn btn-primary" href="{{ url_for('items') }}">Browse Items</a>
+                <a class="btn btn-outline-primary" href="{{ url_for('login') }}">Log In</a>
+                <a class="btn btn-outline-primary" href="{{ url_for('register') }}">Sign Up</a>
+            </div>
         </div>
-    </div>
+    </section>
+    {% endif %}
 {% endblock %}

@@ -17,7 +17,7 @@
                         </li>
                     {% endif %}
                     <li class="list-group-item">
-                        <h5 class="card-header text-capitalize {% if item['status'] == 'lost' %} bg-warning {% elif item['status'] == 'found' %} bg-info {% else %} bg-light {% endif %}">
+                        <h5 class="card-header text-capitalize {% if item['status'] == 'good' %} bg-warning {% elif item['status'] == 'fair' %} bg-info {% else %} bg-light {% endif %}">
                             {{ item["status"] }}
                         </h5>
                     </li>
@@ -36,13 +36,24 @@
                     <li class="list-group-item">
                         <h4 class="card-title fw-bold">{{ item["title"] }}</h4>
                     </li>
+                    {% if item["author_name"] %}
+                        <li class="list-group-item"><strong>Author:</strong> {{ item['author_name'] }}</li>
+                    {% endif %}
+                    {% if item["cost_cents"] is not none %}
+                        <li class="list-group-item"><strong>Cost:</strong> ${{ '%.2f'|format(item['cost_cents'] / 100) }}</li>
+                    {% endif %}
+                    {% if item["school_location"] %}
+                        <li class="list-group-item"><strong>School location:</strong> {{ item['school_location'] }}</li>
+                    {% endif %}
                     {% if item["description"] %}
                         <li class="list-group-item">
                             <h5 class="card-text">{{ item["description"] }}</h5>
                         </li>
                     {% endif %}
                     <li class="list-group-item">
-                        {% if not session.get("user_id") %}
+                        {% if item["status"] == 'sold' %}
+                            <button class="btn btn-outline-secondary" type="button" disabled>Sold</button>
+                        {% elif not session.get("user_id") %}
                             <span data-bs-toggle="tooltip"
                                   data-bs-placement="bottom"
                                   title="Must login to send requests">
@@ -68,9 +79,9 @@
                     </li>
                     {% if user_specific == 1 and session.get("user_id") %}
                         <li class="list-group-item d-flex gap-2">
-                            {% if item["status"] != 'resolved' %}
-                                <form method="post" action="{{ url_for('resolve_item', id=item['id']) }}">
-                                    <button class="btn btn-outline-dark" type="submit" id="resolveBtn">Resolve</button>
+                            {% if item["status"] != 'sold' %}
+                                <form method="post" action="{{ url_for('sell_item', id=item['id']) }}">
+                                    <button class="btn btn-outline-dark" type="submit" id="sellBtn">Mark as Sold</button>
                                 </form>
                             {% endif %}
                             <form method="post" action="{{ url_for('delete_item', id=item['id']) }}">

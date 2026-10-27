@@ -57,7 +57,7 @@ def init_db():
               description TEXT DEFAULT NULL,
               image_path TEXT DEFAULT NULL,
               date_reported DATETIME DEFAULT CURRENT_TIMESTAMP,
-              status TEXT NOT NULL DEFAULT 'lost',
+              status TEXT NOT NULL DEFAULT 'good',
               approved BOOLEAN NOT NULL DEFAULT false
         )
     """,
@@ -78,6 +78,15 @@ def init_db():
     # Run SQL queries
     for query in dbs_queries:
         run_sql(query)
+
+    # Add listing fields to existing databases without changing saved items.
+    columns = {row['name'] for row in run_sql('PRAGMA table_info(items)')}
+    for name, sql_type in [('cost_cents', 'INTEGER'), ('school_location', 'TEXT'), ('author_name', 'TEXT')]:
+        if name not in columns:
+            run_sql(f'ALTER TABLE items ADD COLUMN {name} {sql_type}')
+
+    # Convert legacy categories to the current listing categories.
+    run_sql("UPDATE items SET status = CASE status WHEN 'lost' THEN 'good' WHEN 'found' THEN 'fair' WHEN 'resolved' THEN 'sold' END WHERE status IN ('lost', 'found', 'resolved')")
 
     # Create a default admin account
 
